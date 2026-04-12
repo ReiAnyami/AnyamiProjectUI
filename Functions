@@ -1,0 +1,1184 @@
+--[[
+════════════════════════════════════════════════════════════════════
+  N E B U L A   S U I T E   v7.3  —  CORE ONLY (NO MENU, NO KEYBINDS, NO WATERMARK)
+════════════════════════════════════════════════════════════════════
+  KEYBINDS & WATERMARK REMOVED
+  Features work with default config
+════════════════════════════════════════════════════════════════════
+]]
+
+-- ╔══════════════════════════════════════════╗
+-- ║        [1]  SERVICES & SETUP            ║
+-- ╚══════════════════════════════════════════╝
+local Players            = game:GetService("Players")
+local RunService         = game:GetService("RunService")
+local UserInputService   = game:GetService("UserInputService")
+local Lighting           = game:GetService("Lighting")
+local Workspace          = game:GetService("Workspace")
+local Camera             = Workspace.CurrentCamera
+local LocalPlayer        = Players.LocalPlayer
+
+if getgenv().NebulaCleanup then
+    pcall(getgenv().NebulaCleanup)
+    task.wait(0.2)
+end
+
+local SetFullbright
+
+-- ╔══════════════════════════════════════════╗
+-- ║        [2]  CONFIGURATION               ║
+-- ╚══════════════════════════════════════════╝
+local Config = {
+    Rage = {
+        HitboxExpander = false,
+        FullBodyHitbox = false,
+        HeadSize = 5,
+        BodySize = 3,
+        Transparency = 0.7,
+    },
+    Aimbot = {
+        Enabled    = true,
+        FOV        = 150,
+        Smoothness = 0.15,
+        ShowFOV    = true,
+        TargetLock = true,
+        Bone       = "Head",
+        Prediction = 0.0,
+        TeamCheck  = true,
+        WallCheck  = true,
+        AutoFire   = false,
+        TargetInfo = true,
+        SnapLine   = false,
+        FOVOrigin  = "Mouse",
+        MaxDistance = 500,
+    },
+    Trigger = {
+        Enabled      = false,
+        MagnetRadius = 35,
+        ReactionTime = 0.02,
+        StopDelay    = 0.15,
+        TeamCheck    = true,
+    },
+    Visuals = {
+        Enabled            = true,
+        TeamCheck          = true,
+        HighlightESP       = true,
+        HighlightTransp    = 0.5,
+        BoxESP             = false,
+        NameESP            = true,
+        HealthBar          = false,
+        DistanceESP        = false,
+        Tracers            = false,
+        TracerOrigin       = "Bottom",
+        Skeleton           = false,
+        WallCheck          = true,
+        IgnoreTransparency = 0.5,
+        ColorVisible       = Color3.fromRGB(0, 255, 120),
+        ColorHidden        = Color3.fromRGB(255, 40, 40),
+        MaxDistance         = 1000,
+    },
+    Crosshair = {
+        Enabled   = false,
+        Size      = 8,
+        Gap       = 4,
+        Thickness = 1,
+        Dot       = true,
+        DotSize   = 2,
+        Color     = Color3.fromRGB(0, 255, 0),
+    },
+    Combat = {
+        RapidFire    = false,
+        FireDelay    = 0.05,
+        AutoShoot    = false,
+        NoRecoil     = false,
+    },
+    Misc = {
+        AntiAFK        = true,
+        AntiKick       = false,
+        Fullbright     = false,
+        InfiniteJump   = false,
+        SpeedHack      = false,
+        SpeedValue     = 16,
+        Noclip         = false,
+    },
+}
+
+-- ╔══════════════════════════════════════════╗
+-- ║     [3]  STATE & CONNECTION TRACKER     ║
+-- ╚══════════════════════════════════════════╝
+local State = {
+    Aiming            = true,
+    AimTarget         = nil,
+    CurrentTarget     = nil,
+    IsFiring          = false,
+    AutoFiring        = false,
+    LastTargetT       = 0,
+    Running           = true,
+    FrameCount        = 0,
+    CurrentFPS        = 0,
+    LastFPSUpdate     = tick(),
+    OriginalWalkSpeed = 16,
+}
+
+local Connections    = {}
+local OriginalSizes = {}
+local ESPCache       = {}
+local OldHook        = nil
+local OriginalLight  = {}
+local LastShotTime   = 0
+local AutoClickerConnection = nil
+
+local function TrackConnection(conn)
+    table.insert(Connections, conn)
+    return conn
+end
+
+-- ╔══════════════════════════════════════════╗
+-- ║       [4]  INPUT HELPERS                ║
+-- ╚══════════════════════════════════════════╝
+local InputManager = {}
+function InputManager.Press()
+    if mouse1press then
+        mouse1press()
+    elseif Input and Input.LeftDown then
+        Input.LeftDown()
+    else
+        pcall(function()
+            game:GetService("VirtualInputManager"):SendMouseButtonEvent(0, 0, 0, true, game, 1)
+        end)
+    end
+end
+function InputManager.Release()
+    if mouse1release then
+        mouse1release()
+    elseif Input and Input.LeftUp then
+        Input.LeftUp()
+    else
+        pcall(function()
+            game:GetService("VirtualInputManager"):SendMouseButtonEvent(0, 0, 0, false, game, 1)
+        end)
+    end
+end
+
+-- ╔══════════════════════════════════════════╗
+-- ║       [5]  UTILITY FUNCTIONS            ║
+-- ╚══════════════════════════════════════════╝
+local RayParams = RaycastParams.new()
+RayParams.FilterType = Enum.RaycastFilterType.Exclude
+RayParams.IgnoreWater = true
+
+local function IsAlive(plr)
+    if not plr or plr == LocalPlayer then return false end
+    local c = plr.Character
+    if not c then return false end
+    local h = c:FindFirstChildOfClass("Humanoid")
+    if not h or h.Health <= 0 then return false end
+    if not c:FindFirstChild("HumanoidRootPart") then return false end
+    if not c:FindFirstChild("Head") then return false end
+    return true
+end
+
+local function IsEnemyFor(plr, module)
+    local tc = false
+    if module == "Trigger" then
+        tc = Config.Trigger.TeamCheck
+    elseif module == "Aimbot" then
+        tc = Config.Aimbot.TeamCheck
+    elseif module == "ESP" then
+        tc = Config.Visuals.TeamCheck
+    end
+    if not tc then return true end
+    if not plr.Team or not LocalPlayer.Team then return true end
+    return plr.Team ~= LocalPlayer.Team
+end
+
+local function CheckVisibility(character, forceCheck)
+    if not forceCheck and not Config.Visuals.WallCheck then return true end
+    local lc = LocalPlayer.Character
+    if not lc then return true end
+    local origin = Camera.CFrame.Position
+    local head = character:FindFirstChild("Head")
+    if not head then return false end
+    local dir = head.Position - origin
+    local ignore = {lc, Camera}
+    for _ = 1, 5 do
+        RayParams.FilterDescendantsInstances = ignore
+        local res = Workspace:Raycast(origin, dir, RayParams)
+        if not res then return true end
+        if res.Instance:IsDescendantOf(character) then return true end
+        if res.Instance.Transparency >= Config.Visuals.IgnoreTransparency
+           or not res.Instance.CanCollide then
+            table.insert(ignore, res.Instance)
+        else
+            return false
+        end
+    end
+    return false
+end
+
+local function IsInRange(plr, maxDist)
+    if not maxDist or maxDist <= 0 then return true end
+    local char = plr.Character
+    if not char then return false end
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not root then return false end
+    return (Camera.CFrame.Position - root.Position).Magnitude <= maxDist
+end
+
+local function GetBone(character, boneName)
+    if boneName == "Head" then
+        return character:FindFirstChild("Head")
+    elseif boneName == "Torso" then
+        return character:FindFirstChild("UpperTorso")
+            or character:FindFirstChild("Torso")
+    elseif boneName == "Closest" then
+        local mousePos = UserInputService:GetMouseLocation()
+        local best, bestDist = nil, math.huge
+        for _, part in ipairs(character:GetChildren()) do
+            if part:IsA("BasePart") then
+                local pos, vis = Camera:WorldToViewportPoint(part.Position)
+                if vis then
+                    local d = (Vector2.new(pos.X, pos.Y) - mousePos).Magnitude
+                    if d < bestDist then bestDist = d; best = part end
+                end
+            end
+        end
+        return best or character:FindFirstChild("Head")
+    end
+    return character:FindFirstChild("Head")
+end
+
+local R15Bones = {
+    {"Head", "UpperTorso"}, {"UpperTorso", "LowerTorso"},
+    {"UpperTorso", "LeftUpperArm"}, {"LeftUpperArm", "LeftLowerArm"}, {"LeftLowerArm", "LeftHand"},
+    {"UpperTorso", "RightUpperArm"}, {"RightUpperArm", "RightLowerArm"}, {"RightLowerArm", "RightHand"},
+    {"LowerTorso", "LeftUpperLeg"}, {"LeftUpperLeg", "LeftLowerLeg"}, {"LeftLowerLeg", "LeftFoot"},
+    {"LowerTorso", "RightUpperLeg"}, {"RightUpperLeg", "RightLowerLeg"}, {"RightLowerLeg", "RightFoot"},
+}
+local R6Bones = {
+    {"Head", "Torso"}, {"Torso", "Left Arm"}, {"Torso", "Right Arm"},
+    {"Torso", "Left Leg"}, {"Torso", "Right Leg"},
+}
+local function GetBoneConnections(char)
+    return char:FindFirstChild("UpperTorso") and R15Bones or R6Bones
+end
+
+-- ╔══════════════════════════════════════════╗
+-- ║       [6]  DRAWING OBJECTS              ║
+-- ╚══════════════════════════════════════════╝
+local FOVCircle = Drawing.new("Circle")
+FOVCircle.Thickness = 1; FOVCircle.NumSides = 64
+FOVCircle.Filled = false; FOVCircle.Visible = false
+FOVCircle.Color = Color3.fromRGB(255, 255, 255); FOVCircle.Transparency = 0.7
+
+local MagnetCircle = Drawing.new("Circle")
+MagnetCircle.Thickness = 1; MagnetCircle.NumSides = 32
+MagnetCircle.Filled = false; MagnetCircle.Visible = false
+MagnetCircle.Color = Color3.fromRGB(255, 50, 50); MagnetCircle.Transparency = 0.6
+
+local CrossLines = {}
+for i = 1, 4 do
+    CrossLines[i] = Drawing.new("Line")
+    CrossLines[i].Thickness = 1
+    CrossLines[i].Color = Color3.fromRGB(0, 255, 0)
+    CrossLines[i].Visible = false
+end
+local CrossDot = Drawing.new("Circle")
+CrossDot.Thickness = 0; CrossDot.NumSides = 12; CrossDot.Filled = true
+CrossDot.Visible = false; CrossDot.Color = Color3.fromRGB(0, 255, 0)
+
+local TgtInfo = {}
+TgtInfo.Name = Drawing.new("Text")
+TgtInfo.Name.Size = 14; TgtInfo.Name.Center = true
+TgtInfo.Name.Outline = true; TgtInfo.Name.Visible = false
+TgtInfo.Name.Color = Color3.fromRGB(255, 255, 255)
+
+TgtInfo.Info = Drawing.new("Text")
+TgtInfo.Info.Size = 12; TgtInfo.Info.Center = true
+TgtInfo.Info.Outline = true; TgtInfo.Info.Visible = false
+TgtInfo.Info.Color = Color3.fromRGB(180, 180, 200)
+
+TgtInfo.BarBg = Drawing.new("Line")
+TgtInfo.BarBg.Thickness = 3; TgtInfo.BarBg.Visible = false
+TgtInfo.BarBg.Color = Color3.fromRGB(40, 40, 40)
+
+TgtInfo.BarFill = Drawing.new("Line")
+TgtInfo.BarFill.Thickness = 2; TgtInfo.BarFill.Visible = false
+
+-- Snap Line
+local SnapLineObj = Drawing.new("Line")
+SnapLineObj.Thickness = 1
+SnapLineObj.Visible = false
+SnapLineObj.Color = Color3.fromRGB(255, 255, 0)
+
+-- ╔══════════════════════════════════════════╗
+-- ║       [7]  ESP DRAWING CACHE            ║
+-- ╚══════════════════════════════════════════╝
+local MAX_SKELETON = 14
+
+local function CreateESPObjects()
+    local o = {}
+    o.BoxLines = {}
+    for i = 1, 4 do
+        local l = Drawing.new("Line"); l.Thickness = 1; l.Visible = false
+        o.BoxLines[i] = l
+    end
+    o.Name = Drawing.new("Text")
+    o.Name.Size = 13; o.Name.Center = true; o.Name.Outline = true; o.Name.Visible = false
+    o.Distance = Drawing.new("Text")
+    o.Distance.Size = 12; o.Distance.Center = true; o.Distance.Outline = true; o.Distance.Visible = false
+    o.HealthBg = Drawing.new("Line"); o.HealthBg.Thickness = 4; o.HealthBg.Visible = false
+    o.HealthBg.Color = Color3.fromRGB(15, 15, 15)
+    o.HealthFill = Drawing.new("Line"); o.HealthFill.Thickness = 2; o.HealthFill.Visible = false
+    o.Tracer = Drawing.new("Line"); o.Tracer.Thickness = 1; o.Tracer.Visible = false
+    o.SkeletonLines = {}
+    for i = 1, MAX_SKELETON do
+        local l = Drawing.new("Line"); l.Thickness = 1; l.Visible = false
+        o.SkeletonLines[i] = l
+    end
+    return o
+end
+
+local function DestroyESPObjects(o)
+    if not o then return end
+    for _, l in ipairs(o.BoxLines) do pcall(function() l:Remove() end) end
+    pcall(function() o.Name:Remove() end)
+    pcall(function() o.Distance:Remove() end)
+    pcall(function() o.HealthBg:Remove() end)
+    pcall(function() o.HealthFill:Remove() end)
+    pcall(function() o.Tracer:Remove() end)
+    for _, l in ipairs(o.SkeletonLines) do pcall(function() l:Remove() end) end
+end
+
+local function HideESPObjects(o)
+    if not o then return end
+    for _, l in ipairs(o.BoxLines) do l.Visible = false end
+    o.Name.Visible = false; o.Distance.Visible = false
+    o.HealthBg.Visible = false; o.HealthFill.Visible = false
+    o.Tracer.Visible = false
+    for _, l in ipairs(o.SkeletonLines) do l.Visible = false end
+end
+
+local function GetESP(plr)
+    if not ESPCache[plr] then ESPCache[plr] = CreateESPObjects() end
+    return ESPCache[plr]
+end
+
+local function RemoveESP(plr)
+    DestroyESPObjects(ESPCache[plr])
+    ESPCache[plr] = nil
+end
+
+-- ╔══════════════════════════════════════════╗
+-- ║     [8]  CORE: HITBOX EXPANDER          ║
+-- ╚══════════════════════════════════════════╝
+local function GetBodyParts(char)
+    local parts = {}
+    for _, part in ipairs(char:GetChildren()) do
+        if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+            table.insert(parts, part)
+        end
+    end
+    return parts
+end
+
+local function UpdateHitboxes()
+    if not Config.Rage.HitboxExpander and not Config.Rage.FullBodyHitbox then return end
+    
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and IsAlive(plr) and IsEnemyFor(plr, "Aimbot") then
+            local char = plr.Character
+            if not char then continue end
+            
+            if Config.Rage.FullBodyHitbox then
+                if not OriginalSizes[plr] then OriginalSizes[plr] = {} end
+                for _, part in ipairs(GetBodyParts(char)) do
+                    if not OriginalSizes[plr][part.Name] then
+                        OriginalSizes[plr][part.Name] = part.Size
+                    end
+                    local size = Config.Rage.BodySize
+                    if part.Name == "Head" then size = Config.Rage.HeadSize end
+                    part.Size = Vector3.new(size, size, size)
+                    part.Transparency = Config.Rage.Transparency
+                    part.CanCollide = false
+                end
+            elseif Config.Rage.HitboxExpander then
+                local head = char.Head
+                if not OriginalSizes[plr] then
+                    OriginalSizes[plr] = head.Size
+                end
+                local s = Config.Rage.HeadSize
+                if head.Size.X ~= s then
+                    head.Size = Vector3.new(s, s, s)
+                    head.Transparency = Config.Rage.Transparency
+                    head.CanCollide = false
+                end
+            end
+        end
+    end
+end
+
+-- ╔══════════════════════════════════════════╗
+-- ║     [9]  CORE: RAPID FIRE               ║
+-- ╚══════════════════════════════════════════╝
+local function SafeClick()
+    pcall(function()
+        local VirtualUser = game:GetService("VirtualUser")
+        VirtualUser:CaptureController()
+        local center = Camera.ViewportSize / 2
+        VirtualUser:ClickButton1(center, game)
+    end)
+end
+
+local function StartAutoClicker()
+    if AutoClickerConnection then
+        AutoClickerConnection:Disconnect()
+        AutoClickerConnection = nil
+    end
+    
+    if not Config.Combat.RapidFire then return end
+    
+    AutoClickerConnection = RunService.RenderStepped:Connect(function()
+        if not Config.Combat.RapidFire then return end
+        
+        local char = LocalPlayer.Character
+        if not char then return end
+        
+        local tool = char:FindFirstChildOfClass("Tool")
+        if not tool then return end
+        
+        if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
+            local now = tick()
+            if now - LastShotTime >= Config.Combat.FireDelay then
+                LastShotTime = now
+                SafeClick()
+            end
+        end
+    end)
+end
+
+local function StopAutoClicker()
+    if AutoClickerConnection then
+        AutoClickerConnection:Disconnect()
+        AutoClickerConnection = nil
+    end
+end
+
+local function ResetRapidFire()
+    StopAutoClicker()
+end
+
+-- ╔══════════════════════════════════════════╗
+-- ║     [10]  CORE: AIMBOT                  ║
+-- ╚══════════════════════════════════════════╝
+local function AimAt(bone, character)
+    if not bone then return end
+    local targetPos = bone.Position
+    if Config.Aimbot.Prediction > 0 then
+        local root = character:FindFirstChild("HumanoidRootPart")
+        if root then
+            targetPos = targetPos + root.AssemblyLinearVelocity * Config.Aimbot.Prediction
+        end
+    end
+    local dir = (targetPos - Camera.CFrame.Position).Unit
+    local dot = Camera.CFrame.LookVector:Dot(dir)
+    local angleFactor = math.clamp(1 - dot, 0, 1)
+    local smooth = Config.Aimbot.Smoothness * (0.4 + 0.6 * angleFactor)
+    smooth = math.clamp(smooth, 0.01, 1)
+    local targetCF = CFrame.new(Camera.CFrame.Position, targetPos)
+    Camera.CFrame = Camera.CFrame:Lerp(targetCF, smooth)
+end
+
+local function UpdateAimbot()
+    if not Config.Aimbot.Enabled or not State.Aiming then
+        State.AimTarget = nil
+        State.CurrentTarget = nil
+        if State.AutoFiring then
+            pcall(InputManager.Release); State.AutoFiring = false
+        end
+        return
+    end
+
+    local mousePos
+    if Config.Aimbot.FOVOrigin == "Center" then
+        local vp = Camera.ViewportSize
+        mousePos = Vector2.new(vp.X / 2, vp.Y / 2)
+    else
+        mousePos = UserInputService:GetMouseLocation()
+    end
+    State.CurrentTarget = nil
+
+    if Config.Aimbot.TargetLock and State.AimTarget then
+        local t = State.AimTarget
+        if IsAlive(t) and IsEnemyFor(t, "Aimbot") and IsInRange(t, Config.Aimbot.MaxDistance) then
+            local bone = GetBone(t.Character, Config.Aimbot.Bone)
+            if bone then
+                local pos, vis = Camera:WorldToViewportPoint(bone.Position)
+                if vis then
+                    local dist = (Vector2.new(pos.X, pos.Y) - mousePos).Magnitude
+                    if dist <= Config.Aimbot.FOV * 1.5 then
+                        if not Config.Aimbot.WallCheck or CheckVisibility(t.Character, true) then
+                            State.CurrentTarget = t
+                            AimAt(bone, t.Character)
+                            if Config.Aimbot.AutoFire and not State.AutoFiring then
+                                State.AutoFiring = true; pcall(InputManager.Press)
+                            end
+                            return
+                        end
+                    end
+                end
+            end
+        end
+        State.AimTarget = nil
+    end
+
+    local closest, minDist = nil, Config.Aimbot.FOV
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and IsAlive(plr) and IsEnemyFor(plr, "Aimbot") and IsInRange(plr, Config.Aimbot.MaxDistance) then
+            if not Config.Aimbot.WallCheck or CheckVisibility(plr.Character, true) then
+                local bone = GetBone(plr.Character, Config.Aimbot.Bone)
+                if bone then
+                    local pos, vis = Camera:WorldToViewportPoint(bone.Position)
+                    if vis then
+                        local dist = (Vector2.new(pos.X, pos.Y) - mousePos).Magnitude
+                        if dist < minDist then
+                            minDist = dist; closest = plr
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    if closest then
+        if Config.Aimbot.TargetLock then State.AimTarget = closest end
+        State.CurrentTarget = closest
+        local bone = GetBone(closest.Character, Config.Aimbot.Bone)
+        AimAt(bone, closest.Character)
+        if Config.Aimbot.AutoFire and not State.AutoFiring then
+            State.AutoFiring = true; pcall(InputManager.Press)
+        end
+    else
+        if State.AutoFiring then
+            pcall(InputManager.Release); State.AutoFiring = false
+        end
+    end
+end
+
+-- ╔══════════════════════════════════════════╗
+-- ║     [11]  CORE: TRIGGERBOT              ║
+-- ╚══════════════════════════════════════════╝
+local function UpdateTrigger()
+    MagnetCircle.Visible = Config.Trigger.Enabled
+    MagnetCircle.Position = UserInputService:GetMouseLocation()
+    MagnetCircle.Radius = Config.Trigger.MagnetRadius
+
+    if not Config.Trigger.Enabled then
+        if State.IsFiring then pcall(InputManager.Release); State.IsFiring = false end
+        return
+    end
+
+    if Config.Aimbot.AutoFire and Config.Aimbot.Enabled then return end
+
+    local mousePos = UserInputService:GetMouseLocation()
+
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and IsAlive(plr) and IsEnemyFor(plr, "Trigger") then
+            local head = plr.Character:FindFirstChild("Head")
+            if head then
+                local pos, onScreen = Camera:WorldToViewportPoint(head.Position)
+                if onScreen then
+                    local dist = (Vector2.new(pos.X, pos.Y) - mousePos).Magnitude
+                    if dist <= Config.Trigger.MagnetRadius then
+                        if CheckVisibility(plr.Character, true) then
+                            State.LastTargetT = tick()
+                            break
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    local timeSince = tick() - State.LastTargetT
+    if timeSince < Config.Trigger.StopDelay then
+        if not State.IsFiring then
+            State.IsFiring = true
+            task.delay(Config.Trigger.ReactionTime, function()
+                if State.Running and Config.Trigger.Enabled
+                   and (tick() - State.LastTargetT) < (Config.Trigger.StopDelay + 0.1) then
+                    pcall(InputManager.Press)
+                else
+                    State.IsFiring = false
+                end
+            end)
+        end
+    else
+        if State.IsFiring then
+            pcall(InputManager.Release); State.IsFiring = false
+        end
+    end
+end
+
+-- ╔══════════════════════════════════════════╗
+-- ║     [12]  CORE: HIGHLIGHT ESP           ║
+-- ╚══════════════════════════════════════════╝
+local function UpdateHighlightESP()
+    if not Config.Visuals.Enabled or not Config.Visuals.HighlightESP then
+        for _, p in pairs(Players:GetPlayers()) do
+            pcall(function()
+                if p.Character and p.Character:FindFirstChild("NebulaHL") then
+                    p.Character.NebulaHL:Destroy()
+                end
+            end)
+        end
+        return
+    end
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and plr.Character then
+            if IsEnemyFor(plr, "ESP") and IsAlive(plr) and IsInRange(plr, Config.Visuals.MaxDistance) then
+                local hl = plr.Character:FindFirstChild("NebulaHL")
+                if not hl then
+                    hl = Instance.new("Highlight")
+                    hl.Name = "NebulaHL"
+                    hl.Adornee = plr.Character
+                    hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                    hl.Parent = plr.Character
+                end
+                hl.Enabled = true
+                hl.OutlineTransparency = 1
+                hl.FillTransparency = Config.Visuals.HighlightTransp
+                hl.FillColor = CheckVisibility(plr.Character)
+                    and Config.Visuals.ColorVisible or Config.Visuals.ColorHidden
+            else
+                pcall(function()
+                    if plr.Character:FindFirstChild("NebulaHL") then
+                        plr.Character.NebulaHL:Destroy()
+                    end
+                end)
+            end
+        end
+    end
+end
+
+-- ╔══════════════════════════════════════════╗
+-- ║     [13]  CORE: DRAWING ESP             ║
+-- ╚══════════════════════════════════════════╝
+local function UpdateDrawingESP()
+    local viewport = Camera.ViewportSize
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer then
+            local o = GetESP(plr)
+            local char = plr.Character
+            local show = Config.Visuals.Enabled and char and IsAlive(plr) and IsEnemyFor(plr, "ESP") and IsInRange(plr, Config.Visuals.MaxDistance)
+
+            if not show then
+                HideESPObjects(o)
+            else
+                local root = char:FindFirstChild("HumanoidRootPart")
+                local head = char:FindFirstChild("Head")
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
+                if not (root and head and humanoid) then
+                    HideESPObjects(o)
+                else
+                    local _, rootVis = Camera:WorldToViewportPoint(root.Position)
+                    if not rootVis then
+                        HideESPObjects(o)
+                    else
+                        local vis = CheckVisibility(char)
+                        local col = vis and Config.Visuals.ColorVisible or Config.Visuals.ColorHidden
+
+                        local headTop = head.Position + Vector3.new(0, head.Size.Y * 0.5 + 0.5, 0)
+                        local feet = root.Position - Vector3.new(0, 3, 0)
+                        local tp = Camera:WorldToViewportPoint(headTop)
+                        local bp = Camera:WorldToViewportPoint(feet)
+                        local boxH = math.abs(bp.Y - tp.Y)
+                        local boxW = boxH * 0.55
+                        local cx = tp.X
+
+                        if Config.Visuals.BoxESP then
+                            local x1, y1 = cx - boxW / 2, tp.Y
+                            local x2, y2 = cx + boxW / 2, bp.Y
+                            o.BoxLines[1].From = Vector2.new(x1, y1); o.BoxLines[1].To = Vector2.new(x2, y1)
+                            o.BoxLines[2].From = Vector2.new(x2, y1); o.BoxLines[2].To = Vector2.new(x2, y2)
+                            o.BoxLines[3].From = Vector2.new(x2, y2); o.BoxLines[3].To = Vector2.new(x1, y2)
+                            o.BoxLines[4].From = Vector2.new(x1, y2); o.BoxLines[4].To = Vector2.new(x1, y1)
+                            for i = 1, 4 do o.BoxLines[i].Color = col; o.BoxLines[i].Visible = true end
+                        else
+                            for i = 1, 4 do o.BoxLines[i].Visible = false end
+                        end
+
+                        if Config.Visuals.NameESP then
+                            o.Name.Text = plr.DisplayName
+                            o.Name.Position = Vector2.new(cx, tp.Y - 16)
+                            o.Name.Color = col; o.Name.Visible = true
+                        else
+                            o.Name.Visible = false
+                        end
+
+                        if Config.Visuals.DistanceESP then
+                            local dist = math.floor((Camera.CFrame.Position - root.Position).Magnitude)
+                            o.Distance.Text = dist .. "m"
+                            o.Distance.Position = Vector2.new(cx, bp.Y + 3)
+                            o.Distance.Color = col; o.Distance.Visible = true
+                        else
+                            o.Distance.Visible = false
+                        end
+
+                        if Config.Visuals.HealthBar then
+                            local x = cx - boxW / 2 - 6
+                            local hp = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
+                            o.HealthBg.From = Vector2.new(x, tp.Y)
+                            o.HealthBg.To = Vector2.new(x, bp.Y)
+                            o.HealthBg.Visible = true
+                            local fillBot = bp.Y - (bp.Y - tp.Y) * hp
+                            o.HealthFill.From = Vector2.new(x, bp.Y)
+                            o.HealthFill.To = Vector2.new(x, fillBot)
+                            o.HealthFill.Color = Color3.fromRGB(255 * (1 - hp), 255 * hp, 0)
+                            o.HealthFill.Visible = true
+                        else
+                            o.HealthBg.Visible = false; o.HealthFill.Visible = false
+                        end
+
+                        if Config.Visuals.Tracers then
+                            local origin
+                            if Config.Visuals.TracerOrigin == "Bottom" then
+                                origin = Vector2.new(viewport.X / 2, viewport.Y)
+                            elseif Config.Visuals.TracerOrigin == "Center" then
+                                origin = Vector2.new(viewport.X / 2, viewport.Y / 2)
+                            else
+                                origin = UserInputService:GetMouseLocation()
+                            end
+                            o.Tracer.From = origin
+                            o.Tracer.To = Vector2.new(cx, bp.Y)
+                            o.Tracer.Color = col; o.Tracer.Visible = true
+                        else
+                            o.Tracer.Visible = false
+                        end
+
+                        if Config.Visuals.Skeleton then
+                            local bones = GetBoneConnections(char)
+                            for i, conn in ipairs(bones) do
+                                local line = o.SkeletonLines[i]
+                                if line then
+                                    local p1 = char:FindFirstChild(conn[1])
+                                    local p2 = char:FindFirstChild(conn[2])
+                                    if p1 and p2 then
+                                        local s1, v1 = Camera:WorldToViewportPoint(p1.Position)
+                                        local s2, v2 = Camera:WorldToViewportPoint(p2.Position)
+                                        if v1 and v2 then
+                                            line.From = Vector2.new(s1.X, s1.Y)
+                                            line.To = Vector2.new(s2.X, s2.Y)
+                                            line.Color = col; line.Visible = true
+                                        else
+                                            line.Visible = false
+                                        end
+                                    else
+                                        line.Visible = false
+                                    end
+                                end
+                            end
+                            for i = #bones + 1, MAX_SKELETON do
+                                if o.SkeletonLines[i] then o.SkeletonLines[i].Visible = false end
+                            end
+                        else
+                            for i = 1, MAX_SKELETON do
+                                if o.SkeletonLines[i] then o.SkeletonLines[i].Visible = false end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    for plr, _ in pairs(ESPCache) do
+        if not plr.Parent then RemoveESP(plr) end
+    end
+end
+
+-- ╔══════════════════════════════════════════╗
+-- ║     [14]  CORE: CROSSHAIR               ║
+-- ╚══════════════════════════════════════════╝
+local function UpdateCrosshair()
+    if not Config.Crosshair.Enabled then
+        for i = 1, 4 do CrossLines[i].Visible = false end
+        CrossDot.Visible = false
+        return
+    end
+    local center = Camera.ViewportSize / 2
+    local cx, cy = center.X, center.Y
+    local sz = Config.Crosshair.Size
+    local gap = Config.Crosshair.Gap
+    local col = Config.Crosshair.Color
+    local thick = Config.Crosshair.Thickness
+
+    for i = 1, 4 do CrossLines[i].Thickness = thick; CrossLines[i].Color = col end
+
+    CrossLines[1].From = Vector2.new(cx, cy - gap)
+    CrossLines[1].To = Vector2.new(cx, cy - gap - sz); CrossLines[1].Visible = true
+    CrossLines[2].From = Vector2.new(cx, cy + gap)
+    CrossLines[2].To = Vector2.new(cx, cy + gap + sz); CrossLines[2].Visible = true
+    CrossLines[3].From = Vector2.new(cx - gap, cy)
+    CrossLines[3].To = Vector2.new(cx - gap - sz, cy); CrossLines[3].Visible = true
+    CrossLines[4].From = Vector2.new(cx + gap, cy)
+    CrossLines[4].To = Vector2.new(cx + gap + sz, cy); CrossLines[4].Visible = true
+
+    CrossDot.Position = Vector2.new(cx, cy)
+    CrossDot.Radius = Config.Crosshair.DotSize
+    CrossDot.Color = col
+    CrossDot.Visible = Config.Crosshair.Dot
+end
+
+-- ╔══════════════════════════════════════════╗
+-- ║     [15]  CORE: TARGET INFO             ║
+-- ╚══════════════════════════════════════════╝
+local function UpdateTargetInfo()
+    local target = State.CurrentTarget or State.AimTarget
+    if not Config.Aimbot.TargetInfo or not target or not IsAlive(target) or not State.Aiming then
+        TgtInfo.Name.Visible = false; TgtInfo.Info.Visible = false
+        TgtInfo.BarBg.Visible = false; TgtInfo.BarFill.Visible = false
+        return
+    end
+    local char = target.Character
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not root then
+        TgtInfo.Name.Visible = false; TgtInfo.Info.Visible = false
+        TgtInfo.BarBg.Visible = false; TgtInfo.BarFill.Visible = false
+        return
+    end
+
+    local vp = Camera.ViewportSize
+    local cx = vp.X / 2
+    local baseY = vp.Y / 2 + 50
+
+    TgtInfo.Name.Text = target.DisplayName
+    TgtInfo.Name.Position = Vector2.new(cx, baseY)
+    TgtInfo.Name.Visible = true
+
+    local dist = math.floor((Camera.CFrame.Position - root.Position).Magnitude)
+    local hp = math.floor(humanoid.Health)
+    local maxHp = math.floor(humanoid.MaxHealth)
+    local weapon = "None"
+    for _, tool in ipairs(char:GetChildren()) do
+        if tool:IsA("Tool") then weapon = tool.Name; break end
+    end
+
+    TgtInfo.Info.Text = string.format("%d/%d HP | %dm | %s", hp, maxHp, dist, weapon)
+    TgtInfo.Info.Position = Vector2.new(cx, baseY + 16)
+    TgtInfo.Info.Visible = true
+
+    local barW = 120
+    local barX = cx - barW / 2
+    local barY = baseY + 34
+    local hpFrac = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
+
+    TgtInfo.BarBg.From = Vector2.new(barX, barY)
+    TgtInfo.BarBg.To = Vector2.new(barX + barW, barY)
+    TgtInfo.BarBg.Visible = true
+    TgtInfo.BarFill.From = Vector2.new(barX, barY)
+    TgtInfo.BarFill.To = Vector2.new(barX + barW * hpFrac, barY)
+    TgtInfo.BarFill.Color = Color3.fromRGB(255 * (1 - hpFrac), 255 * hpFrac, 0)
+    TgtInfo.BarFill.Visible = true
+end
+
+-- ╔══════════════════════════════════════════╗
+-- ║     [16]  CORE: FULLBRIGHT              ║
+-- ╚══════════════════════════════════════════╝
+SetFullbright = function(enabled)
+    if enabled then
+        OriginalLight.Ambient = Lighting.Ambient
+        OriginalLight.Brightness = Lighting.Brightness
+        OriginalLight.FogEnd = Lighting.FogEnd
+        OriginalLight.FogStart = Lighting.FogStart
+        OriginalLight.GlobalShadows = Lighting.GlobalShadows
+        OriginalLight.OutdoorAmbient = Lighting.OutdoorAmbient
+
+        Lighting.Ambient = Color3.new(1, 1, 1)
+        Lighting.Brightness = 2
+        Lighting.FogEnd = 1e9
+        Lighting.FogStart = 1e9
+        Lighting.GlobalShadows = false
+        Lighting.OutdoorAmbient = Color3.new(1, 1, 1)
+
+        for _, v in ipairs(Lighting:GetDescendants()) do
+            if v:IsA("Atmosphere") or v:IsA("BloomEffect") or v:IsA("BlurEffect")
+               or v:IsA("ColorCorrectionEffect") or v:IsA("SunRaysEffect")
+               or v:IsA("DepthOfFieldEffect") then
+                if not v:GetAttribute("_NebHid") then
+                    v:SetAttribute("_NebHid", true)
+                    v:SetAttribute("_NebOrig", v.Enabled)
+                    v.Enabled = false
+                end
+            end
+        end
+    else
+        if OriginalLight.Ambient then
+            Lighting.Ambient = OriginalLight.Ambient
+            Lighting.Brightness = OriginalLight.Brightness
+            Lighting.FogEnd = OriginalLight.FogEnd
+            Lighting.FogStart = OriginalLight.FogStart
+            Lighting.GlobalShadows = OriginalLight.GlobalShadows
+            Lighting.OutdoorAmbient = OriginalLight.OutdoorAmbient
+        end
+        for _, v in ipairs(Lighting:GetDescendants()) do
+            if v:GetAttribute("_NebHid") then
+                v.Enabled = v:GetAttribute("_NebOrig") ~= false
+                v:SetAttribute("_NebHid", nil)
+                v:SetAttribute("_NebOrig", nil)
+            end
+        end
+    end
+end
+
+if Config.Misc.Fullbright then SetFullbright(true) end
+
+-- ╔══════════════════════════════════════════╗
+-- ║     [17]  ANTI-AFK                      ║
+-- ╚══════════════════════════════════════════╝
+TrackConnection(LocalPlayer.Idled:Connect(function()
+    if Config.Misc.AntiAFK then
+        pcall(function()
+            local VU = game:GetService("VirtualUser")
+            VU:CaptureController()
+            VU:ClickButton2(Vector2.new())
+        end)
+    end
+end))
+
+-- ╔══════════════════════════════════════════╗
+-- ║   [18]  CHARACTER HANDLING (RESPAWN)     ║
+-- ╚══════════════════════════════════════════╝
+local function OnCharacterAdded(plr, char)
+    if plr == LocalPlayer then return end
+    task.delay(1, function()
+        if not State.Running then return end
+        if Config.Rage.FullBodyHitbox and IsAlive(plr) then
+            if not OriginalSizes[plr] then OriginalSizes[plr] = {} end
+            for _, part in ipairs(GetBodyParts(char)) do
+                if not OriginalSizes[plr][part.Name] then
+                    OriginalSizes[plr][part.Name] = part.Size
+                end
+                local size = Config.Rage.BodySize
+                if part.Name == "Head" then size = Config.Rage.HeadSize end
+                part.Size = Vector3.new(size, size, size)
+                part.Transparency = Config.Rage.Transparency
+                part.CanCollide = false
+            end
+        elseif Config.Rage.HitboxExpander and IsAlive(plr) then
+            local head = plr.Character and plr.Character:FindFirstChild("Head")
+            if head then
+                OriginalSizes[plr] = head.Size
+                head.Size = Vector3.new(Config.Rage.HeadSize, Config.Rage.HeadSize, Config.Rage.HeadSize)
+                head.Transparency = Config.Rage.Transparency
+                head.CanCollide = false
+            end
+        end
+        if Config.Visuals.Enabled and Config.Visuals.HighlightESP and IsAlive(plr)
+           and IsEnemyFor(plr, "ESP") then
+            pcall(function()
+                if plr.Character:FindFirstChild("NebulaHL") then
+                    plr.Character.NebulaHL:Destroy()
+                end
+                local hl = Instance.new("Highlight")
+                hl.Name = "NebulaHL"
+                hl.Adornee = plr.Character
+                hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                hl.Parent = plr.Character
+            end)
+        end
+    end)
+end
+
+local function SetupPlayer(plr)
+    if plr == LocalPlayer then return end
+    if plr.Character then OnCharacterAdded(plr, plr.Character) end
+    TrackConnection(plr.CharacterAdded:Connect(function(char)
+        OnCharacterAdded(plr, char)
+    end))
+end
+
+for _, plr in ipairs(Players:GetPlayers()) do SetupPlayer(plr) end
+TrackConnection(Players.PlayerAdded:Connect(SetupPlayer))
+
+TrackConnection(Players.PlayerRemoving:Connect(function(plr)
+    RemoveESP(plr)
+    OriginalSizes[plr] = nil
+    if State.AimTarget == plr then State.AimTarget = nil end
+    if State.CurrentTarget == plr then State.CurrentTarget = nil end
+end))
+
+LocalPlayer.CharacterAdded:Connect(function()
+    ResetRapidFire()
+end)
+
+-- ╔══════════════════════════════════════════╗
+-- ║     [19]  MAIN LOOP                     ║
+-- ╚══════════════════════════════════════════╝
+TrackConnection(RunService.RenderStepped:Connect(function()
+    if not State.Running then return end
+    Camera = Workspace.CurrentCamera
+
+    local mp
+    if Config.Aimbot.FOVOrigin == "Center" then
+        local vp = Camera.ViewportSize
+        mp = Vector2.new(vp.X / 2, vp.Y / 2)
+    else
+        mp = UserInputService:GetMouseLocation()
+    end
+    FOVCircle.Position = mp
+    FOVCircle.Radius = Config.Aimbot.FOV
+    FOVCircle.Visible = Config.Aimbot.Enabled and Config.Aimbot.ShowFOV
+    if State.AimTarget and IsAlive(State.AimTarget) then
+        FOVCircle.Color = Color3.fromRGB(100, 255, 100)
+    else
+        FOVCircle.Color = Color3.fromRGB(255, 255, 255)
+    end
+
+    pcall(UpdateAimbot)
+    pcall(UpdateHitboxes)
+    pcall(UpdateTrigger)
+    pcall(UpdateDrawingESP)
+    pcall(UpdateCrosshair)
+    pcall(UpdateTargetInfo)
+
+    if Config.Aimbot.SnapLine and State.Aiming and State.CurrentTarget and IsAlive(State.CurrentTarget) then
+        local bone = GetBone(State.CurrentTarget.Character, Config.Aimbot.Bone)
+        if bone then
+            local pos, vis = Camera:WorldToViewportPoint(bone.Position)
+            if vis then
+                local center = Camera.ViewportSize / 2
+                SnapLineObj.From = Vector2.new(center.X, center.Y)
+                SnapLineObj.To = Vector2.new(pos.X, pos.Y)
+                local isVis = CheckVisibility(State.CurrentTarget.Character, true)
+                SnapLineObj.Color = isVis and Color3.fromRGB(0, 255, 100) or Color3.fromRGB(255, 50, 50)
+                SnapLineObj.Visible = true
+            else
+                SnapLineObj.Visible = false
+            end
+        else
+            SnapLineObj.Visible = false
+        end
+    else
+        SnapLineObj.Visible = false
+    end
+
+    if Config.Misc.SpeedHack then
+        local char = LocalPlayer.Character
+        if char then
+            local h = char:FindFirstChildOfClass("Humanoid")
+            if h then h.WalkSpeed = Config.Misc.SpeedValue end
+        end
+    end
+
+    if Config.Misc.Noclip then
+        local char = LocalPlayer.Character
+        if char then
+            for _, part in ipairs(char:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+        end
+    end
+end))
+
+task.spawn(function()
+    while State.Running do
+        pcall(UpdateHighlightESP)
+        task.wait(0.1)
+    end
+end)
+
+-- ╔══════════════════════════════════════════╗
+-- ║     [20]  INFINITE JUMP                 ║
+-- ╚══════════════════════════════════════════╝
+TrackConnection(UserInputService.InputBegan:Connect(function(input)
+    if Config.Misc.InfiniteJump and input.KeyCode == Enum.KeyCode.Space then
+        local char = LocalPlayer.Character
+        if char then
+            local h = char:FindFirstChildOfClass("Humanoid")
+            if h then h:ChangeState(Enum.HumanoidStateType.Jumping) end
+        end
+    end
+end))
+
+-- ╔══════════════════════════════════════════╗
+-- ║     [21]  CLEANUP FUNCTION              ║
+-- ╚══════════════════════════════════════════╝
+getgenv().NebulaCleanup = function()
+    State.Running = false
+
+    for _, conn in ipairs(Connections) do
+        pcall(function() conn:Disconnect() end)
+    end
+    Connections = {}
+
+    if State.IsFiring then pcall(InputManager.Release) end
+    if State.AutoFiring then pcall(InputManager.Release) end
+    State.IsFiring = false
+    State.AutoFiring = false
+
+    pcall(function() FOVCircle:Remove() end)
+    pcall(function() MagnetCircle:Remove() end)
+    pcall(function() CrossDot:Remove() end)
+    for i = 1, 4 do pcall(function() CrossLines[i]:Remove() end) end
+    for _, key in ipairs({"Name", "Info", "BarBg", "BarFill"}) do
+        pcall(function() TgtInfo[key]:Remove() end)
+    end
+    pcall(function() SnapLineObj:Remove() end)
+
+    for plr, _ in pairs(ESPCache) do RemoveESP(plr) end
+
+    for plr, sizes in pairs(OriginalSizes) do
+        pcall(function()
+            if plr.Character then
+                if type(sizes) == "table" then
+                    for name, size in pairs(sizes) do
+                        local part = plr.Character:FindFirstChild(name)
+                        if part and part:IsA("BasePart") then
+                            part.Size = size
+                            part.Transparency = 0
+                            part.CanCollide = true
+                        end
+                    end
+                elseif plr.Character:FindFirstChild("Head") then
+                    plr.Character.Head.Size = sizes
+                    plr.Character.Head.Transparency = 0
+                    plr.Character.Head.CanCollide = true
+                end
+            end
+        end)
+    end
+    OriginalSizes = {}
+
+    for _, p in ipairs(Players:GetPlayers()) do
+        pcall(function()
+            if p.Character and p.Character:FindFirstChild("NebulaHL") then
+                p.Character.NebulaHL:Destroy()
+            end
+        end)
+    end
+
+    if Config.Misc.Fullbright then SetFullbright(false) end
+
+    if State.OriginalWalkSpeed then
+        local char = LocalPlayer.Character
+        if char then
+            local h = char:FindFirstChildOfClass("Humanoid")
+            if h then h.WalkSpeed = State.OriginalWalkSpeed end
+        end
+    end
+
+    if OldHook then
+        pcall(function() hookmetamethod(game, "__namecall", OldHook) end)
+        OldHook = nil
+    end
+
+    ResetRapidFire()
+
+    getgenv().NebulaCleanup = nil
+end
+
+print("Nebula Suite v7.3 loaded (NO MENU, NO KEYBINDS, NO WATERMARK)")
+print("Aimbot: Always ON | ESP: Enabled | Hitbox: Configurable")
