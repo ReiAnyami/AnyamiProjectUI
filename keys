@@ -8,6 +8,11 @@
         "subscription": "Premium", 
         "expiry": 1893456000,
         "hwid": ""
+},
+    "TEST": {
+        "subscription": "OWNER", 
+        "expiry": 1893456000,
+        "hwid": ""
     },
     "VIP-2024-IJKL": {
         "subscription": "VIP",
