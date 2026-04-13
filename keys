@@ -1,0 +1,17 @@
+{
+    "FREE-2024-ABCD": {
+        "subscription": "Free",
+        "expiry": 1893456000,
+        "hwid": ""
+    },
+    "PREMIUM-2024-EFGH": {
+        "subscription": "Premium", 
+        "expiry": 1893456000,
+        "hwid": ""
+    },
+    "VIP-2024-IJKL": {
+        "subscription": "VIP",
+        "expiry": 1735689600,
+        "hwid": ""
+    }
+}
