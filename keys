@@ -9,8 +9,8 @@
         "expiry": 1893456000,
         "hwid": ""
 },
-    "TEST": {
-        "subscription": "OWNER", 
+    "OwnerKeyAdminTestSadAnyamiProject": {
+        "subscription": "ProektComanda", 
         "expiry": 1893456000,
         "hwid": ""
     },
