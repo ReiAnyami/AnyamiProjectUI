@@ -1,25 +1,295 @@
 --[[
 ════════════════════════════════════════════════════════════════════
-  N E B U L A   S U I T E   v7.3  —  CORE ONLY (NO MENU, NO KEYBINDS, NO WATERMARK)
+  A N Y A M I   P R O J E C T   v1.0  —  ULTIMATE EDITION
 ════════════════════════════════════════════════════════════════════
-  KEYBINDS & WATERMARK REMOVED
-  Features work with default config
+  + Smooth Rainbow colors
+  + Working Item Chams
+  + Dot Crosshair + Swastika Crosshair
+  + Full EN/RU Language Support
 ════════════════════════════════════════════════════════════════════
 ]]
 
 -- ╔══════════════════════════════════════════╗
+-- ║     [0]  LOAD ANYAMI UI LIBRARY         ║
+-- ╚══════════════════════════════════════════╝
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ReiAnyami/AnyamiProjectUI/refs/heads/main/main"))()
+local CheatName = "AnyamiProject"
+
+Library.Folders = {
+    Directory = CheatName,
+    Configs = CheatName .. "/Configs",
+    Assets = CheatName .. "/Assets",
+}
+
+-- ╔══════════════════════════════════════════╗
+-- ║     [LANGUAGE SYSTEM]                   ║
+-- ╚══════════════════════════════════════════╝
+local Language = {
+    Current = "EN",
+    EN = {
+        menu_name = "Anyami Project",
+        menu_sub = "v1.0 | Ultimate",
+        tab_rainbow = "Rainbow",
+        tab_aimbot = "Aimbot",
+        tab_esp = "ESP",
+        tab_rage = "Rage",
+        tab_combat = "Combat",
+        tab_visuals = "Visuals",
+        tab_misc = "Misc",
+        tab_trigger = "Trigger",
+        tab_settings = "Settings",
+        rainbow_global = "Global Rainbow",
+        rainbow_speed = "Rainbow Speed",
+        rainbow_esp = "Rainbow ESP",
+        rainbow_crosshair = "Rainbow Crosshair",
+        rainbow_chams = "Rainbow Item Chams",
+        rainbow_menu = "Rainbow Menu",
+        esp_enabled = "Enable ESP",
+        esp_highlight = "Highlight ESP",
+        esp_highlight_transp = "Highlight Transparency",
+        esp_box = "Box ESP",
+        esp_name = "Name ESP",
+        esp_health = "Health Bar",
+        esp_distance = "Distance ESP",
+        esp_tracers = "Tracers",
+        esp_skeleton = "Skeleton ESP",
+        esp_teamcheck = "Team Check",
+        esp_maxdist = "Max ESP Distance",
+        esp_color_visible = "Visible Color",
+        esp_color_hidden = "Hidden Color",
+        aim_enabled = "Enable Aimbot",
+        aim_fov = "FOV Radius",
+        aim_fov_color = "FOV Color",
+        aim_smooth = "Smoothness",
+        aim_show_fov = "Show FOV Circle",
+        aim_target_lock = "Target Lock",
+        aim_auto_fire = "Auto Fire",
+        aim_teamcheck = "Team Check",
+        aim_wallcheck = "Wall Check",
+        aim_maxdist = "Max Distance",
+        aim_bone = "Aim Bone",
+        aim_prediction = "Prediction",
+        cross_enabled = "Enable Crosshair",
+        cross_type = "Crosshair Type",
+        cross_dot = "Dot",
+        cross_swastika = "Swastika",
+        cross_size = "Size",
+        cross_thick = "Thickness",
+        cross_dot_size = "Dot Size",
+        cross_hook = "Hook Length",
+        cross_rot_speed = "Rotation Speed",
+        cross_color = "Crosshair Color",
+        chams_enabled = "Enable Item Chams",
+        chams_material = "Material",
+        chams_color = "Chams Color",
+        chams_transp = "Transparency",
+        combat_rapidfire = "Rapid Fire",
+        combat_fire_delay = "Fire Delay",
+        combat_auto_shoot = "Auto Shoot",
+        rage_hitbox = "Hitbox Expander",
+        rage_fullbody = "Full Body Hitbox",
+        rage_head_size = "Head Size",
+        rage_body_size = "Body Size",
+        rage_transp = "Hitbox Transparency",
+        misc_antiafk = "Anti-AFK",
+        misc_watermark = "Watermark",
+        misc_keybind_overlay = "Keybind Overlay",
+        misc_fullbright = "Fullbright",
+        misc_infinite_jump = "Infinite Jump",
+        misc_speed_hack = "Speed Hack",
+        misc_speed_value = "Speed Value",
+        misc_noclip = "Noclip",
+        trigger_enabled = "Enable Triggerbot",
+        trigger_mode = "Mode",
+        trigger_hold = "Hold",
+        trigger_toggle = "Toggle",
+        trigger_radius = "Magnet Radius",
+        trigger_reaction = "Reaction Delay",
+        trigger_stop = "Stop Delay",
+        trigger_teamcheck = "Team Check",
+        key_aimbot = "Aimbot Key",
+        key_trigger = "Trigger Key",
+        key_esp_toggle = "ESP Toggle",
+        language = "Language",
+    },
+    RU = {
+        menu_name = "Anyami Project",
+        menu_sub = "v1.0 | Максимальная",
+        tab_rainbow = "Радуга",
+        tab_aimbot = "Аимбот",
+        tab_esp = "ESP",
+        tab_rage = "Рейдж",
+        tab_combat = "Бой",
+        tab_visuals = "Визуал",
+        tab_misc = "Разное",
+        tab_trigger = "Триггер",
+        tab_settings = "Настройки",
+        rainbow_global = "Глобальная радуга",
+        rainbow_speed = "Скорость радуги",
+        rainbow_esp = "Радужный ESP",
+        rainbow_crosshair = "Радужный прицел",
+        rainbow_chams = "Радужные чеймсы",
+        rainbow_menu = "Радужное меню",
+        esp_enabled = "Включить ESP",
+        esp_highlight = "Подсветка ESP",
+        esp_highlight_transp = "Прозрачность подсветки",
+        esp_box = "Box ESP",
+        esp_name = "Имя ESP",
+        esp_health = "Полоска здоровья",
+        esp_distance = "Дистанция",
+        esp_tracers = "Трассеры",
+        esp_skeleton = "Скелет",
+        esp_teamcheck = "Проверка команды",
+        esp_maxdist = "Макс дистанция",
+        esp_color_visible = "Цвет видимых",
+        esp_color_hidden = "Цвет скрытых",
+        aim_enabled = "Включить аимбот",
+        aim_fov = "Радиус FOV",
+        aim_fov_color = "Цвет FOV",
+        aim_smooth = "Плавность",
+        aim_show_fov = "Показать круг FOV",
+        aim_target_lock = "Блокировка цели",
+        aim_auto_fire = "Авто-огонь",
+        aim_teamcheck = "Проверка команды",
+        aim_wallcheck = "Проверка стен",
+        aim_maxdist = "Макс дистанция",
+        aim_bone = "Кость для аима",
+        aim_prediction = "Предсказание",
+        cross_enabled = "Включить прицел",
+        cross_type = "Тип прицела",
+        cross_dot = "Точка",
+        cross_swastika = "Свастика",
+        cross_size = "Размер",
+        cross_thick = "Толщина",
+        cross_dot_size = "Размер точки",
+        cross_hook = "Длина загиба",
+        cross_rot_speed = "Скорость вращения",
+        cross_color = "Цвет прицела",
+        chams_enabled = "Включить чеймсы",
+        chams_material = "Материал",
+        chams_color = "Цвет чеймсов",
+        chams_transp = "Прозрачность",
+        combat_rapidfire = "Быстрая стрельба",
+        combat_fire_delay = "Задержка выстрела",
+        combat_auto_shoot = "Авто-выстрел",
+        rage_hitbox = "Увеличение хитбокса",
+        rage_fullbody = "Полное тело",
+        rage_head_size = "Размер головы",
+        rage_body_size = "Размер тела",
+        rage_transp = "Прозрачность хитбокса",
+        misc_antiafk = "Анти-AFK",
+        misc_watermark = "Водяной знак",
+        misc_keybind_overlay = "Оверлей клавиш",
+        misc_fullbright = "Полная яркость",
+        misc_infinite_jump = "Бесконечные прыжки",
+        misc_speed_hack = "Спидхак",
+        misc_speed_value = "Скорость",
+        misc_noclip = "Ноклип",
+        trigger_enabled = "Включить триггербот",
+        trigger_mode = "Режим",
+        trigger_hold = "Зажатие",
+        trigger_toggle = "Переключение",
+        trigger_radius = "Радиус магнита",
+        trigger_reaction = "Задержка реакции",
+        trigger_stop = "Задержка остановки",
+        trigger_teamcheck = "Проверка команды",
+        key_aimbot = "Клавиша аимбота",
+        key_trigger = "Клавиша триггера",
+        key_esp_toggle = "Клавиша ESP",
+        language = "Язык",
+    }
+}
+
+local function GetText(key)
+    return Language[Language.Current][key] or key
+end
+
+-- ╔══════════════════════════════════════════╗
+-- ║     [RAINBOW COLOR SYSTEM]              ║
+-- ╚══════════════════════════════════════════╝
+local RainbowState = {
+    Enabled = false,
+    Hue = 0,
+    Speed = 0.5,
+    LastTime = tick(),
+}
+
+local function GetRainbowColor()
+    local now = tick()
+    local delta = math.min(0.1, now - RainbowState.LastTime)
+    RainbowState.LastTime = now
+    RainbowState.Hue = (RainbowState.Hue + RainbowState.Speed * delta) % 1
+    return Color3.fromHSV(RainbowState.Hue, 1, 1)
+end
+
+-- ╔══════════════════════════════════════════╗
+-- ║     [THEME SETUP]                       ║
+-- ╚══════════════════════════════════════════╝
+local function UpdateThemeColors()
+    if Config.UI.RainbowMenu then
+        local rainbow = GetRainbowColor()
+        Library.Theme.Accent = rainbow
+        Library.Theme.AccentGradient = rainbow
+        Library:ChangeTheme("Accent", rainbow)
+        Library:ChangeTheme("AccentGradient", rainbow)
+    else
+        local Accent = Color3.fromRGB(255, 80, 80)
+        local Gradient = Color3.fromRGB(120, 20, 20)
+        Library.Theme.Accent = Accent
+        Library.Theme.AccentGradient = Gradient
+        Library:ChangeTheme("Accent", Accent)
+        Library:ChangeTheme("AccentGradient", Gradient)
+    end
+end
+
+local Accent = Color3.fromRGB(255, 80, 80)
+local Gradient = Color3.fromRGB(120, 20, 20)
+Library.Theme.Accent = Accent
+Library.Theme.AccentGradient = Gradient
+Library:ChangeTheme("Accent", Accent)
+Library:ChangeTheme("AccentGradient", Gradient)
+
+local Window = Library:Window({
+    Name = GetText("menu_name"),
+    SubName = GetText("menu_sub"),
+    Logo = "120959262762131"
+})
+
+local KeybindList = Library:KeybindList("Keybinds")
+
+-- Watermark
+Library:Watermark({
+    "AnyamiProject",
+    "v1.0",
+    120959262762131
+})
+
+task.spawn(function()
+    while true do
+        local FPS = math.floor(1 / game:GetService("RunService").RenderStepped:Wait())
+        Library:Watermark({
+            "AnyamiProject",
+            "v1.0",
+            120959262762131,
+            "FPS: " .. FPS
+        })
+        task.wait(0.5)
+    end
+end)
+
+-- ╔══════════════════════════════════════════╗
 -- ║        [1]  SERVICES & SETUP            ║
 -- ╚══════════════════════════════════════════╝
-local Players            = game:GetService("Players")
-local RunService         = game:GetService("RunService")
-local UserInputService   = game:GetService("UserInputService")
-local Lighting           = game:GetService("Lighting")
-local Workspace          = game:GetService("Workspace")
-local Camera             = Workspace.CurrentCamera
-local LocalPlayer        = Players.LocalPlayer
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Lighting = game:GetService("Lighting")
+local Workspace = game:GetService("Workspace")
+local Camera = Workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
 
-if getgenv().NebulaCleanup then
-    pcall(getgenv().NebulaCleanup)
+if getgenv().AnyamiCleanup then
+    pcall(getgenv().AnyamiCleanup)
     task.wait(0.2)
 end
 
@@ -29,6 +299,10 @@ local SetFullbright
 -- ║        [2]  CONFIGURATION               ║
 -- ╚══════════════════════════════════════════╝
 local Config = {
+    Rainbow = {
+        Enabled = false,
+        Speed = 0.5,
+    },
     Rage = {
         HitboxExpander = false,
         FullBodyHitbox = false,
@@ -37,8 +311,10 @@ local Config = {
         Transparency = 0.7,
     },
     Aimbot = {
-        Enabled    = true,
+        Enabled    = false,
+        Bind       = Enum.UserInputType.MouseButton2,
         FOV        = 150,
+        FOVColor   = Color3.fromRGB(255, 255, 255),
         Smoothness = 0.15,
         ShowFOV    = true,
         TargetLock = true,
@@ -54,6 +330,8 @@ local Config = {
     },
     Trigger = {
         Enabled      = false,
+        Mode         = "Hold",
+        Bind         = Enum.KeyCode.E,
         MagnetRadius = 35,
         ReactionTime = 0.02,
         StopDelay    = 0.15,
@@ -61,6 +339,7 @@ local Config = {
     },
     Visuals = {
         Enabled            = true,
+        ToggleBind         = Enum.KeyCode.V,
         TeamCheck          = true,
         HighlightESP       = true,
         HighlightTransp    = 0.5,
@@ -75,16 +354,20 @@ local Config = {
         IgnoreTransparency = 0.5,
         ColorVisible       = Color3.fromRGB(0, 255, 120),
         ColorHidden        = Color3.fromRGB(255, 40, 40),
-        MaxDistance         = 1000,
+        MaxDistance        = 1000,
+        RainbowESP         = false,
     },
     Crosshair = {
-        Enabled   = false,
-        Size      = 8,
-        Gap       = 4,
-        Thickness = 1,
-        Dot       = true,
-        DotSize   = 2,
-        Color     = Color3.fromRGB(0, 255, 0),
+        Enabled    = false,
+        Type       = "Dot",
+        Size       = 30,
+        Thickness  = 3,
+        DotSize    = 5,
+        HookLength = 15,
+        Color      = Color3.fromRGB(255, 0, 0),
+        Rainbow    = false,
+        RotationSpeed = 90,
+        SwastikaAngle = 0,
     },
     Combat = {
         RapidFire    = false,
@@ -95,11 +378,24 @@ local Config = {
     Misc = {
         AntiAFK        = true,
         AntiKick       = false,
+        Watermark      = true,
         Fullbright     = false,
         InfiniteJump   = false,
+        KeybindOverlay = true,
         SpeedHack      = false,
         SpeedValue     = 16,
         Noclip         = false,
+    },
+    ItemChams = {
+        Enabled     = false,
+        Material    = "Neon",
+        Color       = Color3.fromRGB(255, 0, 255),
+        Transparency = 0.3,
+        Rainbow     = false,
+    },
+    UI = {
+        OpenKey = Enum.KeyCode.RightShift,
+        RainbowMenu = false,
     },
 }
 
@@ -107,26 +403,25 @@ local Config = {
 -- ║     [3]  STATE & CONNECTION TRACKER     ║
 -- ╚══════════════════════════════════════════╝
 local State = {
-    Aiming            = true,
+    Aiming            = false,
     AimTarget         = nil,
     CurrentTarget     = nil,
+    ToggleState       = false,
     IsFiring          = false,
     AutoFiring        = false,
     LastTargetT       = 0,
     Running           = true,
-    FrameCount        = 0,
-    CurrentFPS        = 0,
-    LastFPSUpdate     = tick(),
     OriginalWalkSpeed = 16,
 }
 
-local Connections    = {}
+local Connections = {}
 local OriginalSizes = {}
-local ESPCache       = {}
-local OldHook        = nil
-local OriginalLight  = {}
-local LastShotTime   = 0
+local ESPCache = {}
+local OldHook = nil
+local OriginalLight = {}
+local LastShotTime = 0
 local AutoClickerConnection = nil
+local ItemChamsCache = {}
 
 local function TrackConnection(conn)
     table.insert(Connections, conn)
@@ -158,6 +453,31 @@ function InputManager.Release()
             game:GetService("VirtualInputManager"):SendMouseButtonEvent(0, 0, 0, false, game, 1)
         end)
     end
+end
+
+local function IsBindActive(bind)
+    if not bind or typeof(bind) ~= "EnumItem" then return false end
+    if bind.EnumType == Enum.KeyCode then
+        return UserInputService:IsKeyDown(bind)
+    elseif bind.EnumType == Enum.UserInputType then
+        return UserInputService:IsMouseButtonPressed(bind)
+    end
+    return false
+end
+
+local function DoesInputMatch(input, bind)
+    if not bind or typeof(bind) ~= "EnumItem" then return false end
+    if bind.EnumType == Enum.KeyCode then return input.KeyCode == bind end
+    if bind.EnumType == Enum.UserInputType then return input.UserInputType == bind end
+    return false
+end
+
+local function BindName(bind)
+    if not bind then return "None" end
+    if bind == Enum.UserInputType.MouseButton1 then return "Mouse1" end
+    if bind == Enum.UserInputType.MouseButton2 then return "Mouse2" end
+    if bind == Enum.UserInputType.MouseButton3 then return "Mouse3" end
+    return bind.Name
 end
 
 -- ╔══════════════════════════════════════════╗
@@ -229,8 +549,7 @@ local function GetBone(character, boneName)
     if boneName == "Head" then
         return character:FindFirstChild("Head")
     elseif boneName == "Torso" then
-        return character:FindFirstChild("UpperTorso")
-            or character:FindFirstChild("Torso")
+        return character:FindFirstChild("UpperTorso") or character:FindFirstChild("Torso")
     elseif boneName == "Closest" then
         local mousePos = UserInputService:GetMouseLocation()
         local best, bestDist = nil, math.huge
@@ -267,45 +586,79 @@ end
 -- ║       [6]  DRAWING OBJECTS              ║
 -- ╚══════════════════════════════════════════╝
 local FOVCircle = Drawing.new("Circle")
-FOVCircle.Thickness = 1; FOVCircle.NumSides = 64
-FOVCircle.Filled = false; FOVCircle.Visible = false
-FOVCircle.Color = Color3.fromRGB(255, 255, 255); FOVCircle.Transparency = 0.7
+FOVCircle.Thickness = 1
+FOVCircle.NumSides = 64
+FOVCircle.Filled = false
+FOVCircle.Visible = false
+FOVCircle.Color = Config.Aimbot.FOVColor
+FOVCircle.Transparency = 0.7
 
 local MagnetCircle = Drawing.new("Circle")
-MagnetCircle.Thickness = 1; MagnetCircle.NumSides = 32
-MagnetCircle.Filled = false; MagnetCircle.Visible = false
-MagnetCircle.Color = Color3.fromRGB(255, 50, 50); MagnetCircle.Transparency = 0.6
+MagnetCircle.Thickness = 1
+MagnetCircle.NumSides = 32
+MagnetCircle.Filled = false
+MagnetCircle.Visible = false
+MagnetCircle.Color = Color3.fromRGB(255, 50, 50)
+MagnetCircle.Transparency = 0.6
 
-local CrossLines = {}
-for i = 1, 4 do
-    CrossLines[i] = Drawing.new("Line")
-    CrossLines[i].Thickness = 1
-    CrossLines[i].Color = Color3.fromRGB(0, 255, 0)
-    CrossLines[i].Visible = false
+-- Dot Crosshair
+local DotCircle = Drawing.new("Circle")
+DotCircle.Thickness = 0
+DotCircle.NumSides = 16
+DotCircle.Filled = true
+DotCircle.Visible = false
+DotCircle.Color = Config.Crosshair.Color
+DotCircle.Radius = Config.Crosshair.DotSize
+
+-- Swastika Crosshair
+local SwastikaLines = {}
+for i = 1, 8 do
+    SwastikaLines[i] = Drawing.new("Line")
+    SwastikaLines[i].Thickness = Config.Crosshair.Thickness
+    SwastikaLines[i].Color = Config.Crosshair.Color
+    SwastikaLines[i].Visible = false
 end
-local CrossDot = Drawing.new("Circle")
-CrossDot.Thickness = 0; CrossDot.NumSides = 12; CrossDot.Filled = true
-CrossDot.Visible = false; CrossDot.Color = Color3.fromRGB(0, 255, 0)
+
+local WatermarkText = Drawing.new("Text")
+WatermarkText.Size = 14
+WatermarkText.Outline = true
+WatermarkText.Color = Color3.fromRGB(140, 140, 200)
+WatermarkText.Position = Vector2.new(10, 10)
+WatermarkText.Visible = false
 
 local TgtInfo = {}
 TgtInfo.Name = Drawing.new("Text")
-TgtInfo.Name.Size = 14; TgtInfo.Name.Center = true
-TgtInfo.Name.Outline = true; TgtInfo.Name.Visible = false
+TgtInfo.Name.Size = 14
+TgtInfo.Name.Center = true
+TgtInfo.Name.Outline = true
+TgtInfo.Name.Visible = false
 TgtInfo.Name.Color = Color3.fromRGB(255, 255, 255)
 
 TgtInfo.Info = Drawing.new("Text")
-TgtInfo.Info.Size = 12; TgtInfo.Info.Center = true
-TgtInfo.Info.Outline = true; TgtInfo.Info.Visible = false
+TgtInfo.Info.Size = 12
+TgtInfo.Info.Center = true
+TgtInfo.Info.Outline = true
+TgtInfo.Info.Visible = false
 TgtInfo.Info.Color = Color3.fromRGB(180, 180, 200)
 
 TgtInfo.BarBg = Drawing.new("Line")
-TgtInfo.BarBg.Thickness = 3; TgtInfo.BarBg.Visible = false
+TgtInfo.BarBg.Thickness = 3
+TgtInfo.BarBg.Visible = false
 TgtInfo.BarBg.Color = Color3.fromRGB(40, 40, 40)
 
 TgtInfo.BarFill = Drawing.new("Line")
-TgtInfo.BarFill.Thickness = 2; TgtInfo.BarFill.Visible = false
+TgtInfo.BarFill.Thickness = 2
+TgtInfo.BarFill.Visible = false
 
--- Snap Line
+local OverlayLines = {}
+for i = 1, 15 do
+    OverlayLines[i] = Drawing.new("Text")
+    OverlayLines[i].Size = 13
+    OverlayLines[i].Font = 2
+    OverlayLines[i].Outline = true
+    OverlayLines[i].Visible = false
+end
+
 local SnapLineObj = Drawing.new("Line")
 SnapLineObj.Thickness = 1
 SnapLineObj.Visible = false
@@ -320,20 +673,36 @@ local function CreateESPObjects()
     local o = {}
     o.BoxLines = {}
     for i = 1, 4 do
-        local l = Drawing.new("Line"); l.Thickness = 1; l.Visible = false
+        local l = Drawing.new("Line")
+        l.Thickness = 1
+        l.Visible = false
         o.BoxLines[i] = l
     end
     o.Name = Drawing.new("Text")
-    o.Name.Size = 13; o.Name.Center = true; o.Name.Outline = true; o.Name.Visible = false
+    o.Name.Size = 13
+    o.Name.Center = true
+    o.Name.Outline = true
+    o.Name.Visible = false
     o.Distance = Drawing.new("Text")
-    o.Distance.Size = 12; o.Distance.Center = true; o.Distance.Outline = true; o.Distance.Visible = false
-    o.HealthBg = Drawing.new("Line"); o.HealthBg.Thickness = 4; o.HealthBg.Visible = false
+    o.Distance.Size = 12
+    o.Distance.Center = true
+    o.Distance.Outline = true
+    o.Distance.Visible = false
+    o.HealthBg = Drawing.new("Line")
+    o.HealthBg.Thickness = 4
+    o.HealthBg.Visible = false
     o.HealthBg.Color = Color3.fromRGB(15, 15, 15)
-    o.HealthFill = Drawing.new("Line"); o.HealthFill.Thickness = 2; o.HealthFill.Visible = false
-    o.Tracer = Drawing.new("Line"); o.Tracer.Thickness = 1; o.Tracer.Visible = false
+    o.HealthFill = Drawing.new("Line")
+    o.HealthFill.Thickness = 2
+    o.HealthFill.Visible = false
+    o.Tracer = Drawing.new("Line")
+    o.Tracer.Thickness = 1
+    o.Tracer.Visible = false
     o.SkeletonLines = {}
     for i = 1, MAX_SKELETON do
-        local l = Drawing.new("Line"); l.Thickness = 1; l.Visible = false
+        local l = Drawing.new("Line")
+        l.Thickness = 1
+        l.Visible = false
         o.SkeletonLines[i] = l
     end
     return o
@@ -353,8 +722,10 @@ end
 local function HideESPObjects(o)
     if not o then return end
     for _, l in ipairs(o.BoxLines) do l.Visible = false end
-    o.Name.Visible = false; o.Distance.Visible = false
-    o.HealthBg.Visible = false; o.HealthFill.Visible = false
+    o.Name.Visible = false
+    o.Distance.Visible = false
+    o.HealthBg.Visible = false
+    o.HealthFill.Visible = false
     o.Tracer.Visible = false
     for _, l in ipairs(o.SkeletonLines) do l.Visible = false end
 end
@@ -370,7 +741,55 @@ local function RemoveESP(plr)
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [8]  CORE: HITBOX EXPANDER          ║
+-- ║     [8]  CORE: ITEM CHAMS (FIXED)       ║
+-- ╚══════════════════════════════════════════╝
+local MaterialMap = {
+    Neon = Enum.Material.Neon,
+    Plastic = Enum.Material.Plastic,
+    Metal = Enum.Material.Metal,
+    Wood = Enum.Material.Wood,
+    Stone = Enum.Material.Slate,
+    Glass = Enum.Material.Glass,
+    SmoothPlastic = Enum.Material.SmoothPlastic,
+    Ice = Enum.Material.Ice,
+}
+
+local function ApplyItemChams()
+    if not Config.ItemChams.Enabled then
+        for part, original in pairs(ItemChamsCache) do
+            pcall(function()
+                if part and part.Parent then
+                    part.Material = original
+                end
+            end)
+        end
+        ItemChamsCache = {}
+        return
+    end
+
+    local char = LocalPlayer.Character
+    if not char then return end
+    
+    local chamsColor = Config.ItemChams.Rainbow and GetRainbowColor() or Config.ItemChams.Color
+
+    for _, descendant in ipairs(char:GetDescendants()) do
+        if descendant:IsA("Tool") then
+            for _, part in ipairs(descendant:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    if not ItemChamsCache[part] then
+                        ItemChamsCache[part] = part.Material
+                    end
+                    part.Material = MaterialMap[Config.ItemChams.Material] or Enum.Material.Neon
+                    part.Color = chamsColor
+                    part.Transparency = Config.ItemChams.Transparency
+                end
+            end
+        end
+    end
+end
+
+-- ╔══════════════════════════════════════════╗
+-- ║     [9]  CORE: HITBOX EXPANDER          ║
 -- ╚══════════════════════════════════════════╝
 local function GetBodyParts(char)
     local parts = {}
@@ -419,7 +838,7 @@ local function UpdateHitboxes()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [9]  CORE: RAPID FIRE               ║
+-- ║     [10]  CORE: RAPID FIRE              ║
 -- ╚══════════════════════════════════════════╝
 local function SafeClick()
     pcall(function()
@@ -469,7 +888,7 @@ local function ResetRapidFire()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [10]  CORE: AIMBOT                  ║
+-- ║     [11]  CORE: AIMBOT                  ║
 -- ╚══════════════════════════════════════════╝
 local function AimAt(bone, character)
     if not bone then return end
@@ -494,7 +913,8 @@ local function UpdateAimbot()
         State.AimTarget = nil
         State.CurrentTarget = nil
         if State.AutoFiring then
-            pcall(InputManager.Release); State.AutoFiring = false
+            pcall(InputManager.Release)
+            State.AutoFiring = false
         end
         return
     end
@@ -521,7 +941,8 @@ local function UpdateAimbot()
                             State.CurrentTarget = t
                             AimAt(bone, t.Character)
                             if Config.Aimbot.AutoFire and not State.AutoFiring then
-                                State.AutoFiring = true; pcall(InputManager.Press)
+                                State.AutoFiring = true
+                                pcall(InputManager.Press)
                             end
                             return
                         end
@@ -542,7 +963,8 @@ local function UpdateAimbot()
                     if vis then
                         local dist = (Vector2.new(pos.X, pos.Y) - mousePos).Magnitude
                         if dist < minDist then
-                            minDist = dist; closest = plr
+                            minDist = dist
+                            closest = plr
                         end
                     end
                 end
@@ -556,17 +978,19 @@ local function UpdateAimbot()
         local bone = GetBone(closest.Character, Config.Aimbot.Bone)
         AimAt(bone, closest.Character)
         if Config.Aimbot.AutoFire and not State.AutoFiring then
-            State.AutoFiring = true; pcall(InputManager.Press)
+            State.AutoFiring = true
+            pcall(InputManager.Press)
         end
     else
         if State.AutoFiring then
-            pcall(InputManager.Release); State.AutoFiring = false
+            pcall(InputManager.Release)
+            State.AutoFiring = false
         end
     end
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [11]  CORE: TRIGGERBOT              ║
+-- ║     [12]  CORE: TRIGGERBOT              ║
 -- ╚══════════════════════════════════════════╝
 local function UpdateTrigger()
     MagnetCircle.Visible = Config.Trigger.Enabled
@@ -574,11 +998,29 @@ local function UpdateTrigger()
     MagnetCircle.Radius = Config.Trigger.MagnetRadius
 
     if not Config.Trigger.Enabled then
-        if State.IsFiring then pcall(InputManager.Release); State.IsFiring = false end
+        if State.IsFiring then
+            pcall(InputManager.Release)
+            State.IsFiring = false
+        end
         return
     end
 
     if Config.Aimbot.AutoFire and Config.Aimbot.Enabled then return end
+
+    local isActive = false
+    if Config.Trigger.Mode == "Hold" then
+        isActive = IsBindActive(Config.Trigger.Bind)
+    else
+        isActive = State.ToggleState
+    end
+
+    if not isActive then
+        if State.IsFiring then
+            pcall(InputManager.Release)
+            State.IsFiring = false
+        end
+        return
+    end
 
     local mousePos = UserInputService:GetMouseLocation()
 
@@ -615,32 +1057,37 @@ local function UpdateTrigger()
         end
     else
         if State.IsFiring then
-            pcall(InputManager.Release); State.IsFiring = false
+            pcall(InputManager.Release)
+            State.IsFiring = false
         end
     end
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [12]  CORE: HIGHLIGHT ESP           ║
+-- ║     [13]  CORE: HIGHLIGHT ESP           ║
 -- ╚══════════════════════════════════════════╝
 local function UpdateHighlightESP()
     if not Config.Visuals.Enabled or not Config.Visuals.HighlightESP then
         for _, p in pairs(Players:GetPlayers()) do
             pcall(function()
-                if p.Character and p.Character:FindFirstChild("NebulaHL") then
-                    p.Character.NebulaHL:Destroy()
+                if p.Character and p.Character:FindFirstChild("AnyamiHL") then
+                    p.Character.AnyamiHL:Destroy()
                 end
             end)
         end
         return
     end
+    
+    local espColorVisible = Config.Visuals.RainbowESP and GetRainbowColor() or Config.Visuals.ColorVisible
+    local espColorHidden = Config.Visuals.RainbowESP and GetRainbowColor() or Config.Visuals.ColorHidden
+    
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr ~= LocalPlayer and plr.Character then
             if IsEnemyFor(plr, "ESP") and IsAlive(plr) and IsInRange(plr, Config.Visuals.MaxDistance) then
-                local hl = plr.Character:FindFirstChild("NebulaHL")
+                local hl = plr.Character:FindFirstChild("AnyamiHL")
                 if not hl then
                     hl = Instance.new("Highlight")
-                    hl.Name = "NebulaHL"
+                    hl.Name = "AnyamiHL"
                     hl.Adornee = plr.Character
                     hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
                     hl.Parent = plr.Character
@@ -648,12 +1095,11 @@ local function UpdateHighlightESP()
                 hl.Enabled = true
                 hl.OutlineTransparency = 1
                 hl.FillTransparency = Config.Visuals.HighlightTransp
-                hl.FillColor = CheckVisibility(plr.Character)
-                    and Config.Visuals.ColorVisible or Config.Visuals.ColorHidden
+                hl.FillColor = CheckVisibility(plr.Character) and espColorVisible or espColorHidden
             else
                 pcall(function()
-                    if plr.Character:FindFirstChild("NebulaHL") then
-                        plr.Character.NebulaHL:Destroy()
+                    if plr.Character and plr.Character:FindFirstChild("AnyamiHL") then
+                        plr.Character.AnyamiHL:Destroy()
                     end
                 end)
             end
@@ -662,10 +1108,15 @@ local function UpdateHighlightESP()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [13]  CORE: DRAWING ESP             ║
+-- ║     [14]  CORE: DRAWING ESP             ║
 -- ╚══════════════════════════════════════════╝
 local function UpdateDrawingESP()
     local viewport = Camera.ViewportSize
+    if viewport.X == 0 or viewport.Y == 0 then return end
+    
+    local espColorVisible = Config.Visuals.RainbowESP and GetRainbowColor() or Config.Visuals.ColorVisible
+    local espColorHidden = Config.Visuals.RainbowESP and GetRainbowColor() or Config.Visuals.ColorHidden
+    
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr ~= LocalPlayer then
             local o = GetESP(plr)
@@ -686,7 +1137,7 @@ local function UpdateDrawingESP()
                         HideESPObjects(o)
                     else
                         local vis = CheckVisibility(char)
-                        local col = vis and Config.Visuals.ColorVisible or Config.Visuals.ColorHidden
+                        local col = vis and espColorVisible or espColorHidden
 
                         local headTop = head.Position + Vector3.new(0, head.Size.Y * 0.5 + 0.5, 0)
                         local feet = root.Position - Vector3.new(0, 3, 0)
@@ -699,11 +1150,18 @@ local function UpdateDrawingESP()
                         if Config.Visuals.BoxESP then
                             local x1, y1 = cx - boxW / 2, tp.Y
                             local x2, y2 = cx + boxW / 2, bp.Y
-                            o.BoxLines[1].From = Vector2.new(x1, y1); o.BoxLines[1].To = Vector2.new(x2, y1)
-                            o.BoxLines[2].From = Vector2.new(x2, y1); o.BoxLines[2].To = Vector2.new(x2, y2)
-                            o.BoxLines[3].From = Vector2.new(x2, y2); o.BoxLines[3].To = Vector2.new(x1, y2)
-                            o.BoxLines[4].From = Vector2.new(x1, y2); o.BoxLines[4].To = Vector2.new(x1, y1)
-                            for i = 1, 4 do o.BoxLines[i].Color = col; o.BoxLines[i].Visible = true end
+                            o.BoxLines[1].From = Vector2.new(x1, y1)
+                            o.BoxLines[1].To = Vector2.new(x2, y1)
+                            o.BoxLines[2].From = Vector2.new(x2, y1)
+                            o.BoxLines[2].To = Vector2.new(x2, y2)
+                            o.BoxLines[3].From = Vector2.new(x2, y2)
+                            o.BoxLines[3].To = Vector2.new(x1, y2)
+                            o.BoxLines[4].From = Vector2.new(x1, y2)
+                            o.BoxLines[4].To = Vector2.new(x1, y1)
+                            for i = 1, 4 do
+                                o.BoxLines[i].Color = col
+                                o.BoxLines[i].Visible = true
+                            end
                         else
                             for i = 1, 4 do o.BoxLines[i].Visible = false end
                         end
@@ -711,7 +1169,8 @@ local function UpdateDrawingESP()
                         if Config.Visuals.NameESP then
                             o.Name.Text = plr.DisplayName
                             o.Name.Position = Vector2.new(cx, tp.Y - 16)
-                            o.Name.Color = col; o.Name.Visible = true
+                            o.Name.Color = col
+                            o.Name.Visible = true
                         else
                             o.Name.Visible = false
                         end
@@ -720,7 +1179,8 @@ local function UpdateDrawingESP()
                             local dist = math.floor((Camera.CFrame.Position - root.Position).Magnitude)
                             o.Distance.Text = dist .. "m"
                             o.Distance.Position = Vector2.new(cx, bp.Y + 3)
-                            o.Distance.Color = col; o.Distance.Visible = true
+                            o.Distance.Color = col
+                            o.Distance.Visible = true
                         else
                             o.Distance.Visible = false
                         end
@@ -737,7 +1197,8 @@ local function UpdateDrawingESP()
                             o.HealthFill.Color = Color3.fromRGB(255 * (1 - hp), 255 * hp, 0)
                             o.HealthFill.Visible = true
                         else
-                            o.HealthBg.Visible = false; o.HealthFill.Visible = false
+                            o.HealthBg.Visible = false
+                            o.HealthFill.Visible = false
                         end
 
                         if Config.Visuals.Tracers then
@@ -751,7 +1212,8 @@ local function UpdateDrawingESP()
                             end
                             o.Tracer.From = origin
                             o.Tracer.To = Vector2.new(cx, bp.Y)
-                            o.Tracer.Color = col; o.Tracer.Visible = true
+                            o.Tracer.Color = col
+                            o.Tracer.Visible = true
                         else
                             o.Tracer.Visible = false
                         end
@@ -769,7 +1231,8 @@ local function UpdateDrawingESP()
                                         if v1 and v2 then
                                             line.From = Vector2.new(s1.X, s1.Y)
                                             line.To = Vector2.new(s2.X, s2.Y)
-                                            line.Color = col; line.Visible = true
+                                            line.Color = col
+                                            line.Visible = true
                                         else
                                             line.Visible = false
                                         end
@@ -797,58 +1260,151 @@ local function UpdateDrawingESP()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [14]  CORE: CROSSHAIR               ║
+-- ║     [15]  CORE: SWASTIKA CROSSHAIR      ║
 -- ╚══════════════════════════════════════════╝
-local function UpdateCrosshair()
-    if not Config.Crosshair.Enabled then
-        for i = 1, 4 do CrossLines[i].Visible = false end
-        CrossDot.Visible = false
-        return
-    end
-    local center = Camera.ViewportSize / 2
+local swastikaLastTime = tick()
+
+local function UpdateSwastikaCrosshair()
+    local viewport = Camera.ViewportSize
+    if viewport.X == 0 or viewport.Y == 0 then return end
+    
+    local center = viewport / 2
     local cx, cy = center.X, center.Y
-    local sz = Config.Crosshair.Size
-    local gap = Config.Crosshair.Gap
-    local col = Config.Crosshair.Color
+    local armLength = Config.Crosshair.Size
+    local hookLength = Config.Crosshair.HookLength
     local thick = Config.Crosshair.Thickness
-
-    for i = 1, 4 do CrossLines[i].Thickness = thick; CrossLines[i].Color = col end
-
-    CrossLines[1].From = Vector2.new(cx, cy - gap)
-    CrossLines[1].To = Vector2.new(cx, cy - gap - sz); CrossLines[1].Visible = true
-    CrossLines[2].From = Vector2.new(cx, cy + gap)
-    CrossLines[2].To = Vector2.new(cx, cy + gap + sz); CrossLines[2].Visible = true
-    CrossLines[3].From = Vector2.new(cx - gap, cy)
-    CrossLines[3].To = Vector2.new(cx - gap - sz, cy); CrossLines[3].Visible = true
-    CrossLines[4].From = Vector2.new(cx + gap, cy)
-    CrossLines[4].To = Vector2.new(cx + gap + sz, cy); CrossLines[4].Visible = true
-
-    CrossDot.Position = Vector2.new(cx, cy)
-    CrossDot.Radius = Config.Crosshair.DotSize
-    CrossDot.Color = col
-    CrossDot.Visible = Config.Crosshair.Dot
+    
+    local crosshairColor = Config.Crosshair.Rainbow and GetRainbowColor() or Config.Crosshair.Color
+    
+    for i = 1, 8 do
+        SwastikaLines[i].Thickness = thick
+        SwastikaLines[i].Color = crosshairColor
+    end
+    
+    local now = tick()
+    local deltaTime = math.min(0.033, now - swastikaLastTime)
+    swastikaLastTime = now
+    
+    Config.Crosshair.SwastikaAngle = (Config.Crosshair.SwastikaAngle or 0) + Config.Crosshair.RotationSpeed * deltaTime
+    if Config.Crosshair.SwastikaAngle >= 360 then Config.Crosshair.SwastikaAngle = Config.Crosshair.SwastikaAngle - 360 end
+    
+    local rad = math.rad(Config.Crosshair.SwastikaAngle)
+    local cosA = math.cos(rad)
+    local sinA = math.sin(rad)
+    
+    local directions = {
+        {dx = 0,  dy = -1},
+        {dx = 1,  dy = 0},
+        {dx = 0,  dy = 1},
+        {dx = -1, dy = 0}
+    }
+    
+    local hookDirs = {
+        {hx = 1,  hy = 0},
+        {hx = 0,  hy = 1},
+        {hx = -1, hy = 0},
+        {hx = 0,  hy = -1}
+    }
+    
+    for i = 1, 4 do
+        local dir = directions[i]
+        local mainEnd = Vector2.new(dir.dx * armLength, dir.dy * armLength)
+        
+        local rotatedEndX = mainEnd.X * cosA - mainEnd.Y * sinA
+        local rotatedEndY = mainEnd.X * sinA + mainEnd.Y * cosA
+        local rotatedEnd = Vector2.new(rotatedEndX, rotatedEndY)
+        
+        SwastikaLines[i*2 - 1].From = Vector2.new(cx, cy)
+        SwastikaLines[i*2 - 1].To = Vector2.new(cx + rotatedEnd.X, cy + rotatedEnd.Y)
+        
+        local hookDir = hookDirs[i]
+        local hookVec = Vector2.new(hookDir.hx * hookLength, hookDir.hy * hookLength)
+        
+        local rotatedHookX = hookVec.X * cosA - hookVec.Y * sinA
+        local rotatedHookY = hookVec.X * sinA + hookVec.Y * cosA
+        local rotatedHook = Vector2.new(rotatedHookX, rotatedHookY)
+        
+        SwastikaLines[i*2].From = Vector2.new(cx + rotatedEnd.X, cy + rotatedEnd.Y)
+        SwastikaLines[i*2].To = Vector2.new(cx + rotatedEnd.X + rotatedHook.X, cy + rotatedEnd.Y + rotatedHook.Y)
+    end
+    
+    for i = 1, 8 do SwastikaLines[i].Visible = true end
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [15]  CORE: TARGET INFO             ║
+-- ║     [16]  CORE: DOT CROSSHAIR           ║
+-- ╚══════════════════════════════════════════╝
+local function UpdateDotCrosshair()
+    local viewport = Camera.ViewportSize
+    if viewport.X == 0 or viewport.Y == 0 then return end
+    
+    local center = viewport / 2
+    local cx, cy = center.X, center.Y
+    local crosshairColor = Config.Crosshair.Rainbow and GetRainbowColor() or Config.Crosshair.Color
+    
+    DotCircle.Position = Vector2.new(cx, cy)
+    DotCircle.Radius = Config.Crosshair.DotSize
+    DotCircle.Color = crosshairColor
+    DotCircle.Visible = true
+end
+
+-- ╔══════════════════════════════════════════╗
+-- ║     [17]  CORE: CROSSHAIR MANAGER       ║
+-- ╚══════════════════════════════════════════╝
+local function UpdateCrosshair()
+    DotCircle.Visible = false
+    for i = 1, 8 do SwastikaLines[i].Visible = false end
+    
+    if not Config.Crosshair.Enabled then
+        return
+    end
+    
+    if Config.Crosshair.Type == "Dot" then
+        UpdateDotCrosshair()
+    elseif Config.Crosshair.Type == "Swastika" then
+        UpdateSwastikaCrosshair()
+    end
+end
+
+-- ╔══════════════════════════════════════════╗
+-- ║     [18]  CORE: WATERMARK               ║
+-- ╚══════════════════════════════════════════╝
+local function UpdateWatermark()
+    if not Config.Misc.Watermark then
+        WatermarkText.Visible = false
+        return
+    end
+    local ping = math.floor(LocalPlayer:GetNetworkPing() * 1000)
+    local timeStr = os.date("%H:%M:%S")
+    WatermarkText.Text = string.format("Anyami v1.0 | Ping: %dms | %s", ping, timeStr)
+    WatermarkText.Visible = true
+end
+
+-- ╔══════════════════════════════════════════╗
+-- ║     [19]  CORE: TARGET INFO             ║
 -- ╚══════════════════════════════════════════╝
 local function UpdateTargetInfo()
     local target = State.CurrentTarget or State.AimTarget
     if not Config.Aimbot.TargetInfo or not target or not IsAlive(target) or not State.Aiming then
-        TgtInfo.Name.Visible = false; TgtInfo.Info.Visible = false
-        TgtInfo.BarBg.Visible = false; TgtInfo.BarFill.Visible = false
+        TgtInfo.Name.Visible = false
+        TgtInfo.Info.Visible = false
+        TgtInfo.BarBg.Visible = false
+        TgtInfo.BarFill.Visible = false
         return
     end
     local char = target.Character
     local humanoid = char:FindFirstChildOfClass("Humanoid")
     local root = char:FindFirstChild("HumanoidRootPart")
     if not humanoid or not root then
-        TgtInfo.Name.Visible = false; TgtInfo.Info.Visible = false
-        TgtInfo.BarBg.Visible = false; TgtInfo.BarFill.Visible = false
+        TgtInfo.Name.Visible = false
+        TgtInfo.Info.Visible = false
+        TgtInfo.BarBg.Visible = false
+        TgtInfo.BarFill.Visible = false
         return
     end
 
     local vp = Camera.ViewportSize
+    if vp.X == 0 or vp.Y == 0 then return end
     local cx = vp.X / 2
     local baseY = vp.Y / 2 + 50
 
@@ -861,7 +1417,10 @@ local function UpdateTargetInfo()
     local maxHp = math.floor(humanoid.MaxHealth)
     local weapon = "None"
     for _, tool in ipairs(char:GetChildren()) do
-        if tool:IsA("Tool") then weapon = tool.Name; break end
+        if tool:IsA("Tool") then
+            weapon = tool.Name
+            break
+        end
     end
 
     TgtInfo.Info.Text = string.format("%d/%d HP | %dm | %s", hp, maxHp, dist, weapon)
@@ -883,7 +1442,67 @@ local function UpdateTargetInfo()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [16]  CORE: FULLBRIGHT              ║
+-- ║     [20]  CORE: KEYBIND OVERLAY         ║
+-- ╚══════════════════════════════════════════╝
+local function UpdateKeybindOverlay()
+    if not Config.Misc.KeybindOverlay then
+        for i = 1, 15 do OverlayLines[i].Visible = false end
+        return
+    end
+
+    local baseX = 10
+    local baseY = 32
+    local step = 16
+    local green = Color3.fromRGB(0, 255, 100)
+    local gray = Color3.fromRGB(90, 90, 100)
+    local accent = Config.UI.RainbowMenu and GetRainbowColor() or Color3.fromRGB(140, 140, 200)
+    local dim = Color3.fromRGB(60, 60, 90)
+
+    OverlayLines[1].Text = "ANYAMI v1.0"
+    OverlayLines[1].Color = accent
+    OverlayLines[1].Size = 14
+    OverlayLines[1].Position = Vector2.new(baseX, baseY)
+    OverlayLines[1].Visible = true
+
+    OverlayLines[2].Text = "────────────────"
+    OverlayLines[2].Color = dim
+    OverlayLines[2].Size = 10
+    OverlayLines[2].Position = Vector2.new(baseX, baseY + step)
+    OverlayLines[2].Visible = true
+
+    local modules = {
+        {name = "Aimbot",     on = Config.Aimbot.Enabled,        bind = Config.Aimbot.Bind},
+        {name = "Trigger",    on = Config.Trigger.Enabled,       bind = Config.Trigger.Bind},
+        {name = "ESP",        on = Config.Visuals.Enabled,       bind = Config.Visuals.ToggleBind},
+        {name = "Rapid Fire", on = Config.Combat.RapidFire,      bind = nil},
+        {name = "Hitbox",     on = Config.Rage.HitboxExpander,   bind = nil},
+        {name = "Full Body",  on = Config.Rage.FullBodyHitbox,   bind = nil},
+        {name = "Crosshair",  on = Config.Crosshair.Enabled,     bind = nil},
+        {name = "Fullbright", on = Config.Misc.Fullbright,       bind = nil},
+        {name = "Inf. Jump",  on = Config.Misc.InfiniteJump,     bind = nil},
+        {name = "Speed",      on = Config.Misc.SpeedHack,        bind = nil},
+        {name = "Noclip",     on = Config.Misc.Noclip,           bind = nil},
+        {name = "Item Chams", on = Config.ItemChams.Enabled,     bind = nil},
+        {name = "Rainbow",    on = Config.Rainbow.Enabled,       bind = nil},
+    }
+
+    for i, mod in ipairs(modules) do
+        local lineIdx = i + 2
+        local symbol = mod.on and "●" or "○"
+        local bindStr = ""
+        if mod.bind then
+            bindStr = "  [" .. BindName(mod.bind) .. "]"
+        end
+        OverlayLines[lineIdx].Text = symbol .. " " .. mod.name .. bindStr
+        OverlayLines[lineIdx].Color = mod.on and green or gray
+        OverlayLines[lineIdx].Size = 13
+        OverlayLines[lineIdx].Position = Vector2.new(baseX, baseY + step * i + step)
+        OverlayLines[lineIdx].Visible = true
+    end
+end
+
+-- ╔══════════════════════════════════════════╗
+-- ║     [21]  CORE: FULLBRIGHT              ║
 -- ╚══════════════════════════════════════════╝
 SetFullbright = function(enabled)
     if enabled then
@@ -905,9 +1524,9 @@ SetFullbright = function(enabled)
             if v:IsA("Atmosphere") or v:IsA("BloomEffect") or v:IsA("BlurEffect")
                or v:IsA("ColorCorrectionEffect") or v:IsA("SunRaysEffect")
                or v:IsA("DepthOfFieldEffect") then
-                if not v:GetAttribute("_NebHid") then
-                    v:SetAttribute("_NebHid", true)
-                    v:SetAttribute("_NebOrig", v.Enabled)
+                if not v:GetAttribute("_AnyamiHid") then
+                    v:SetAttribute("_AnyamiHid", true)
+                    v:SetAttribute("_AnyamiOrig", v.Enabled)
                     v.Enabled = false
                 end
             end
@@ -922,10 +1541,10 @@ SetFullbright = function(enabled)
             Lighting.OutdoorAmbient = OriginalLight.OutdoorAmbient
         end
         for _, v in ipairs(Lighting:GetDescendants()) do
-            if v:GetAttribute("_NebHid") then
-                v.Enabled = v:GetAttribute("_NebOrig") ~= false
-                v:SetAttribute("_NebHid", nil)
-                v:SetAttribute("_NebOrig", nil)
+            if v:GetAttribute("_AnyamiHid") then
+                v.Enabled = v:GetAttribute("_AnyamiOrig") ~= false
+                v:SetAttribute("_AnyamiHid", nil)
+                v:SetAttribute("_AnyamiOrig", nil)
             end
         end
     end
@@ -934,7 +1553,7 @@ end
 if Config.Misc.Fullbright then SetFullbright(true) end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [17]  ANTI-AFK                      ║
+-- ║     [22]  ANTI-AFK                      ║
 -- ╚══════════════════════════════════════════╝
 TrackConnection(LocalPlayer.Idled:Connect(function()
     if Config.Misc.AntiAFK then
@@ -947,7 +1566,7 @@ TrackConnection(LocalPlayer.Idled:Connect(function()
 end))
 
 -- ╔══════════════════════════════════════════╗
--- ║   [18]  CHARACTER HANDLING (RESPAWN)     ║
+-- ║   [23]  CHARACTER HANDLING (RESPAWN)     ║
 -- ╚══════════════════════════════════════════╝
 local function OnCharacterAdded(plr, char)
     if plr == LocalPlayer then return end
@@ -977,11 +1596,11 @@ local function OnCharacterAdded(plr, char)
         if Config.Visuals.Enabled and Config.Visuals.HighlightESP and IsAlive(plr)
            and IsEnemyFor(plr, "ESP") then
             pcall(function()
-                if plr.Character:FindFirstChild("NebulaHL") then
-                    plr.Character.NebulaHL:Destroy()
+                if plr.Character and plr.Character:FindFirstChild("AnyamiHL") then
+                    plr.Character.AnyamiHL:Destroy()
                 end
                 local hl = Instance.new("Highlight")
-                hl.Name = "NebulaHL"
+                hl.Name = "AnyamiHL"
                 hl.Adornee = plr.Character
                 hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
                 hl.Parent = plr.Character
@@ -1013,11 +1632,40 @@ LocalPlayer.CharacterAdded:Connect(function()
 end)
 
 -- ╔══════════════════════════════════════════╗
--- ║     [19]  MAIN LOOP                     ║
+-- ║     [24]  MAIN LOOP                     ║
 -- ╚══════════════════════════════════════════╝
-TrackConnection(RunService.RenderStepped:Connect(function()
+TrackConnection(RunService.RenderStepped:Connect(function(deltaTime)
     if not State.Running then return end
     Camera = Workspace.CurrentCamera
+
+    if Config.Rainbow.Enabled or Config.Visuals.RainbowESP or Config.Crosshair.Rainbow or Config.ItemChams.Rainbow or Config.UI.RainbowMenu then
+        RainbowState.Speed = Config.Rainbow.Speed
+        if Config.Rainbow.Enabled then
+            RainbowState.Enabled = true
+        else
+            RainbowState.Enabled = Config.Visuals.RainbowESP or Config.Crosshair.Rainbow or Config.ItemChams.Rainbow or Config.UI.RainbowMenu
+        end
+        GetRainbowColor()
+        
+        if Config.UI.RainbowMenu then
+            local rainbow = GetRainbowColor()
+            Library.Theme.Accent = rainbow
+            Library.Theme.AccentGradient = rainbow
+            Library:ChangeTheme("Accent", rainbow)
+            Library:ChangeTheme("AccentGradient", rainbow)
+        else
+            local AccentFix = Color3.fromRGB(255, 80, 80)
+            local GradientFix = Color3.fromRGB(120, 20, 20)
+            Library.Theme.Accent = AccentFix
+            Library.Theme.AccentGradient = GradientFix
+            Library:ChangeTheme("Accent", AccentFix)
+            Library:ChangeTheme("AccentGradient", GradientFix)
+        end
+        
+        if Config.Rainbow.Enabled then
+            FOVCircle.Color = GetRainbowColor()
+        end
+    end
 
     local mp
     if Config.Aimbot.FOVOrigin == "Center" then
@@ -1029,10 +1677,13 @@ TrackConnection(RunService.RenderStepped:Connect(function()
     FOVCircle.Position = mp
     FOVCircle.Radius = Config.Aimbot.FOV
     FOVCircle.Visible = Config.Aimbot.Enabled and Config.Aimbot.ShowFOV
+    
     if State.AimTarget and IsAlive(State.AimTarget) then
-        FOVCircle.Color = Color3.fromRGB(100, 255, 100)
-    else
-        FOVCircle.Color = Color3.fromRGB(255, 255, 255)
+        if not Config.Rainbow.Enabled then
+            FOVCircle.Color = Color3.fromRGB(100, 255, 100)
+        end
+    elseif not Config.Rainbow.Enabled then
+        FOVCircle.Color = Config.Aimbot.FOVColor
     end
 
     pcall(UpdateAimbot)
@@ -1040,7 +1691,10 @@ TrackConnection(RunService.RenderStepped:Connect(function()
     pcall(UpdateTrigger)
     pcall(UpdateDrawingESP)
     pcall(UpdateCrosshair)
+    pcall(UpdateWatermark)
     pcall(UpdateTargetInfo)
+    pcall(UpdateKeybindOverlay)
+    pcall(ApplyItemChams)
 
     if Config.Aimbot.SnapLine and State.Aiming and State.CurrentTarget and IsAlive(State.CurrentTarget) then
         local bone = GetBone(State.CurrentTarget.Character, Config.Aimbot.Bone)
@@ -1091,7 +1745,7 @@ task.spawn(function()
 end)
 
 -- ╔══════════════════════════════════════════╗
--- ║     [20]  INFINITE JUMP                 ║
+-- ║     [25]  INFINITE JUMP                 ║
 -- ╚══════════════════════════════════════════╝
 TrackConnection(UserInputService.InputBegan:Connect(function(input)
     if Config.Misc.InfiniteJump and input.KeyCode == Enum.KeyCode.Space then
@@ -1104,9 +1758,50 @@ TrackConnection(UserInputService.InputBegan:Connect(function(input)
 end))
 
 -- ╔══════════════════════════════════════════╗
--- ║     [21]  CLEANUP FUNCTION              ║
+-- ║     [26]  INPUT HANDLING                ║
 -- ╚══════════════════════════════════════════╝
-getgenv().NebulaCleanup = function()
+TrackConnection(UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+
+    if DoesInputMatch(input, Config.Visuals.ToggleBind) then
+        Config.Visuals.Enabled = not Config.Visuals.Enabled
+        if not Config.Visuals.Enabled then
+            for _, p in pairs(Players:GetPlayers()) do
+                pcall(function()
+                    if p.Character and p.Character:FindFirstChild("AnyamiHL") then
+                        p.Character.AnyamiHL:Destroy()
+                    end
+                end)
+                HideESPObjects(ESPCache[p])
+            end
+        end
+    end
+
+    if DoesInputMatch(input, Config.Aimbot.Bind) then
+        State.Aiming = true
+    end
+
+    if Config.Trigger.Mode == "Toggle" and DoesInputMatch(input, Config.Trigger.Bind) then
+        State.ToggleState = not State.ToggleState
+    end
+end))
+
+TrackConnection(UserInputService.InputEnded:Connect(function(input)
+    if DoesInputMatch(input, Config.Aimbot.Bind) then
+        State.Aiming = false
+        State.AimTarget = nil
+        State.CurrentTarget = nil
+        if State.AutoFiring then
+            pcall(InputManager.Release)
+            State.AutoFiring = false
+        end
+    end
+end))
+
+-- ╔══════════════════════════════════════════╗
+-- ║     [27]  CLEANUP FUNCTION              ║
+-- ╚══════════════════════════════════════════╝
+getgenv().AnyamiCleanup = function()
     State.Running = false
 
     for _, conn in ipairs(Connections) do
@@ -1121,11 +1816,13 @@ getgenv().NebulaCleanup = function()
 
     pcall(function() FOVCircle:Remove() end)
     pcall(function() MagnetCircle:Remove() end)
-    pcall(function() CrossDot:Remove() end)
-    for i = 1, 4 do pcall(function() CrossLines[i]:Remove() end) end
+    pcall(function() WatermarkText:Remove() end)
+    pcall(function() DotCircle:Remove() end)
+    for i = 1, 8 do pcall(function() SwastikaLines[i]:Remove() end) end
     for _, key in ipairs({"Name", "Info", "BarBg", "BarFill"}) do
         pcall(function() TgtInfo[key]:Remove() end)
     end
+    for i = 1, 15 do pcall(function() OverlayLines[i]:Remove() end) end
     pcall(function() SnapLineObj:Remove() end)
 
     for plr, _ in pairs(ESPCache) do RemoveESP(plr) end
@@ -1154,11 +1851,20 @@ getgenv().NebulaCleanup = function()
 
     for _, p in ipairs(Players:GetPlayers()) do
         pcall(function()
-            if p.Character and p.Character:FindFirstChild("NebulaHL") then
-                p.Character.NebulaHL:Destroy()
+            if p.Character and p.Character:FindFirstChild("AnyamiHL") then
+                p.Character.AnyamiHL:Destroy()
             end
         end)
     end
+
+    for part, original in pairs(ItemChamsCache) do
+        pcall(function()
+            if part then
+                part.Material = original
+            end
+        end)
+    end
+    ItemChamsCache = {}
 
     if Config.Misc.Fullbright then SetFullbright(false) end
 
@@ -1177,8 +1883,132 @@ getgenv().NebulaCleanup = function()
 
     ResetRapidFire()
 
-    getgenv().NebulaCleanup = nil
+    getgenv().AnyamiCleanup = nil
 end
 
-print("Nebula Suite v7.3 loaded (NO MENU, NO KEYBINDS, NO WATERMARK)")
-print("Aimbot: Always ON | ESP: Enabled | Hitbox: Configurable")
+-- ╔══════════════════════════════════════════╗
+-- ║     [28]  BUILD ANYAMI UI MENU          ║
+-- ╚══════════════════════════════════════════╝
+-- Создаём страницы
+local RainbowPage = Window:Page({Name = GetText("tab_rainbow"), Icon = "138827881557940"})
+local AimbotPage = Window:Page({Name = GetText("tab_aimbot"), Icon = "138827881557940"})
+local ESPPage = Window:Page({Name = GetText("tab_esp"), Icon = "138827881557940"})
+local RagePage = Window:Page({Name = GetText("tab_rage"), Icon = "138827881557940"})
+local CombatPage = Window:Page({Name = GetText("tab_combat"), Icon = "138827881557940"})
+local VisualsPage = Window:Page({Name = GetText("tab_visuals"), Icon = "138827881557940"})
+local MiscPage = Window:Page({Name = GetText("tab_misc"), Icon = "138827881557940"})
+local TriggerPage = Window:Page({Name = GetText("tab_trigger"), Icon = "138827881557940"})
+local SettingsPage = Window:Page({Name = GetText("tab_settings"), Icon = "138827881557940"})
+
+-- Rainbow Page
+local RainbowSection = RainbowPage:Section({Name = GetText("tab_rainbow"), Side = 1})
+RainbowSection:Toggle({Name = GetText("rainbow_global"), Flag = "RainbowEnabled", Default = Config.Rainbow.Enabled, Callback = function(v) Config.Rainbow.Enabled = v end})
+RainbowSection:Slider({Name = GetText("rainbow_speed"), Flag = "RainbowSpeed", Min = 0.1, Max = 3, Default = Config.Rainbow.Speed, Suffix = "", Callback = function(v) Config.Rainbow.Speed = v end})
+RainbowSection:Toggle({Name = GetText("rainbow_esp"), Flag = "RainbowESP", Default = Config.Visuals.RainbowESP, Callback = function(v) Config.Visuals.RainbowESP = v end})
+RainbowSection:Toggle({Name = GetText("rainbow_crosshair"), Flag = "RainbowCrosshair", Default = Config.Crosshair.Rainbow, Callback = function(v) Config.Crosshair.Rainbow = v end})
+RainbowSection:Toggle({Name = GetText("rainbow_chams"), Flag = "RainbowChams", Default = Config.ItemChams.Rainbow, Callback = function(v) Config.ItemChams.Rainbow = v end})
+RainbowSection:Toggle({Name = GetText("rainbow_menu"), Flag = "RainbowMenu", Default = Config.UI.RainbowMenu, Callback = function(v) Config.UI.RainbowMenu = v end})
+
+-- Aimbot Page
+local AimSection = AimbotPage:Section({Name = GetText("tab_aimbot"), Side = 1})
+AimSection:Toggle({Name = GetText("aim_enabled"), Flag = "AimbotEnabled", Default = Config.Aimbot.Enabled, Callback = function(v) Config.Aimbot.Enabled = v end})
+AimSection:Slider({Name = GetText("aim_fov"), Flag = "AimbotFOV", Min = 30, Max = 600, Default = Config.Aimbot.FOV, Suffix = " px", Callback = function(v) Config.Aimbot.FOV = v end})
+AimSection:Label(GetText("aim_fov_color")):Colorpicker({Name = GetText("aim_fov_color"), Flag = "FOVColor", Default = Config.Aimbot.FOVColor, Callback = function(v) Config.Aimbot.FOVColor = v end})
+AimSection:Slider({Name = GetText("aim_smooth"), Flag = "AimbotSmooth", Min = 0.05, Max = 1, Default = Config.Aimbot.Smoothness, Suffix = "", Callback = function(v) Config.Aimbot.Smoothness = v end})
+AimSection:Toggle({Name = GetText("aim_show_fov"), Flag = "ShowFOV", Default = Config.Aimbot.ShowFOV, Callback = function(v) Config.Aimbot.ShowFOV = v end})
+AimSection:Toggle({Name = GetText("aim_target_lock"), Flag = "TargetLock", Default = Config.Aimbot.TargetLock, Callback = function(v) Config.Aimbot.TargetLock = v end})
+AimSection:Toggle({Name = GetText("aim_auto_fire"), Flag = "AutoFire", Default = Config.Aimbot.AutoFire, Callback = function(v) Config.Aimbot.AutoFire = v end})
+AimSection:Toggle({Name = GetText("aim_teamcheck"), Flag = "AimbotTeamCheck", Default = Config.Aimbot.TeamCheck, Callback = function(v) Config.Aimbot.TeamCheck = v end})
+AimSection:Toggle({Name = GetText("aim_wallcheck"), Flag = "AimbotWallCheck", Default = Config.Aimbot.WallCheck, Callback = function(v) Config.Aimbot.WallCheck = v end})
+AimSection:Slider({Name = GetText("aim_maxdist"), Flag = "AimbotMaxDist", Min = 50, Max = 2000, Default = Config.Aimbot.MaxDistance, Suffix = " studs", Callback = function(v) Config.Aimbot.MaxDistance = v end})
+local BoneSection = AimbotPage:Section({Name = GetText("aim_bone"), Side = 2})
+BoneSection:Dropdown({Name = GetText("aim_bone"), Flag = "AimBone", Default = {Config.Aimbot.Bone}, Items = {"Head", "Torso", "Closest"}, Multi = false, Callback = function(v) Config.Aimbot.Bone = v[1] end})
+BoneSection:Slider({Name = GetText("aim_prediction"), Flag = "Prediction", Min = 0, Max = 0.5, Default = Config.Aimbot.Prediction, Suffix = " s", Callback = function(v) Config.Aimbot.Prediction = v end})
+
+-- ESP Page
+local MainEspSection = ESPPage:Section({Name = GetText("tab_esp"), Side = 1})
+MainEspSection:Toggle({Name = GetText("esp_enabled"), Flag = "ESPEnabled", Default = Config.Visuals.Enabled, Callback = function(v) Config.Visuals.Enabled = v end})
+MainEspSection:Toggle({Name = GetText("esp_highlight"), Flag = "HighlightESP", Default = Config.Visuals.HighlightESP, Callback = function(v) Config.Visuals.HighlightESP = v end})
+MainEspSection:Slider({Name = GetText("esp_highlight_transp"), Flag = "HighlightTransp", Min = 0, Max = 1, Default = Config.Visuals.HighlightTransp, Suffix = "", Callback = function(v) Config.Visuals.HighlightTransp = v end})
+MainEspSection:Toggle({Name = GetText("esp_box"), Flag = "BoxESP", Default = Config.Visuals.BoxESP, Callback = function(v) Config.Visuals.BoxESP = v end})
+MainEspSection:Toggle({Name = GetText("esp_name"), Flag = "NameESP", Default = Config.Visuals.NameESP, Callback = function(v) Config.Visuals.NameESP = v end})
+MainEspSection:Toggle({Name = GetText("esp_health"), Flag = "HealthBar", Default = Config.Visuals.HealthBar, Callback = function(v) Config.Visuals.HealthBar = v end})
+MainEspSection:Toggle({Name = GetText("esp_distance"), Flag = "DistanceESP", Default = Config.Visuals.DistanceESP, Callback = function(v) Config.Visuals.DistanceESP = v end})
+MainEspSection:Toggle({Name = GetText("esp_tracers"), Flag = "Tracers", Default = Config.Visuals.Tracers, Callback = function(v) Config.Visuals.Tracers = v end})
+MainEspSection:Toggle({Name = GetText("esp_skeleton"), Flag = "SkeletonESP", Default = Config.Visuals.Skeleton, Callback = function(v) Config.Visuals.Skeleton = v end})
+MainEspSection:Toggle({Name = GetText("esp_teamcheck"), Flag = "ESPTeamCheck", Default = Config.Visuals.TeamCheck, Callback = function(v) Config.Visuals.TeamCheck = v end})
+MainEspSection:Slider({Name = GetText("esp_maxdist"), Flag = "ESPMaxDist", Min = 50, Max = 5000, Default = Config.Visuals.MaxDistance, Suffix = " studs", Callback = function(v) Config.Visuals.MaxDistance = v end})
+local ColorSection = ESPPage:Section({Name = GetText("tab_esp"), Side = 2})
+ColorSection:Label(GetText("esp_color_visible")):Colorpicker({Name = GetText("esp_color_visible"), Flag = "VisibleColor", Default = Config.Visuals.ColorVisible, Callback = function(v) Config.Visuals.ColorVisible = v end})
+ColorSection:Label(GetText("esp_color_hidden")):Colorpicker({Name = GetText("esp_color_hidden"), Flag = "HiddenColor", Default = Config.Visuals.ColorHidden, Callback = function(v) Config.Visuals.ColorHidden = v end})
+
+-- Rage Page
+local HitboxSection = RagePage:Section({Name = GetText("tab_rage"), Side = 1})
+HitboxSection:Toggle({Name = GetText("rage_hitbox"), Flag = "HitboxExpander", Default = Config.Rage.HitboxExpander, Callback = function(v) Config.Rage.HitboxExpander = v end})
+HitboxSection:Toggle({Name = GetText("rage_fullbody"), Flag = "FullBodyHitbox", Default = Config.Rage.FullBodyHitbox, Callback = function(v) Config.Rage.FullBodyHitbox = v end})
+HitboxSection:Slider({Name = GetText("rage_head_size"), Flag = "HeadSize", Min = 1, Max = 15, Default = Config.Rage.HeadSize, Suffix = "", Callback = function(v) Config.Rage.HeadSize = v end})
+HitboxSection:Slider({Name = GetText("rage_body_size"), Flag = "BodySize", Min = 1, Max = 10, Default = Config.Rage.BodySize, Suffix = "", Callback = function(v) Config.Rage.BodySize = v end})
+HitboxSection:Slider({Name = GetText("rage_transp"), Flag = "HitboxTransp", Min = 0, Max = 1, Default = Config.Rage.Transparency, Suffix = "", Callback = function(v) Config.Rage.Transparency = v end})
+
+-- Combat Page
+local CombatSection = CombatPage:Section({Name = GetText("tab_combat"), Side = 1})
+CombatSection:Toggle({Name = GetText("combat_rapidfire"), Flag = "RapidFire", Default = Config.Combat.RapidFire, Callback = function(v) if v then StartAutoClicker() else StopAutoClicker() end Config.Combat.RapidFire = v end})
+CombatSection:Slider({Name = GetText("combat_fire_delay"), Flag = "FireDelay", Min = 0, Max = 0.5, Default = Config.Combat.FireDelay, Suffix = " s", Callback = function(v) Config.Combat.FireDelay = v end})
+CombatSection:Toggle({Name = GetText("combat_auto_shoot"), Flag = "AutoShoot", Default = Config.Combat.AutoShoot, Callback = function(v) Config.Combat.AutoShoot = v end})
+
+-- Visuals Page
+local CrossSection = VisualsPage:Section({Name = GetText("tab_visuals"), Side = 1})
+CrossSection:Toggle({Name = GetText("cross_enabled"), Flag = "CrosshairEnabled", Default = Config.Crosshair.Enabled, Callback = function(v) Config.Crosshair.Enabled = v end})
+CrossSection:Dropdown({Name = GetText("cross_type"), Flag = "CrossType", Default = {Config.Crosshair.Type}, Items = {GetText("cross_dot"), GetText("cross_swastika")}, Multi = false, Callback = function(v) Config.Crosshair.Type = (v[1] == GetText("cross_dot")) and "Dot" or "Swastika" end})
+CrossSection:Slider({Name = GetText("cross_size"), Flag = "CrossSize", Min = 10, Max = 80, Default = Config.Crosshair.Size, Suffix = " px", Callback = function(v) Config.Crosshair.Size = v end})
+CrossSection:Slider({Name = GetText("cross_thick"), Flag = "CrossThick", Min = 1, Max = 8, Default = Config.Crosshair.Thickness, Suffix = "", Callback = function(v) Config.Crosshair.Thickness = v end})
+CrossSection:Slider({Name = GetText("cross_dot_size"), Flag = "DotSize", Min = 2, Max = 20, Default = Config.Crosshair.DotSize, Suffix = " px", Callback = function(v) Config.Crosshair.DotSize = v end})
+CrossSection:Slider({Name = GetText("cross_hook"), Flag = "HookLength", Min = 5, Max = 40, Default = Config.Crosshair.HookLength, Suffix = " px", Callback = function(v) Config.Crosshair.HookLength = v end})
+CrossSection:Slider({Name = GetText("cross_rot_speed"), Flag = "RotSpeed", Min = 30, Max = 360, Default = Config.Crosshair.RotationSpeed, Suffix = " deg/s", Callback = function(v) Config.Crosshair.RotationSpeed = v end})
+CrossSection:Label(GetText("cross_color")):Colorpicker({Name = GetText("cross_color"), Flag = "CrossColor", Default = Config.Crosshair.Color, Callback = function(v) Config.Crosshair.Color = v end})
+local ChamsSection = VisualsPage:Section({Name = GetText("tab_visuals"), Side = 2})
+ChamsSection:Toggle({Name = GetText("chams_enabled"), Flag = "ItemChamsEnabled", Default = Config.ItemChams.Enabled, Callback = function(v) Config.ItemChams.Enabled = v end})
+ChamsSection:Dropdown({Name = GetText("chams_material"), Flag = "ChamsMaterial", Default = {Config.ItemChams.Material}, Items = {"Neon", "Plastic", "Metal", "Wood", "Stone", "Glass", "SmoothPlastic", "Ice"}, Multi = false, Callback = function(v) Config.ItemChams.Material = v[1] end})
+ChamsSection:Label(GetText("chams_color")):Colorpicker({Name = GetText("chams_color"), Flag = "ChamsColor", Default = Config.ItemChams.Color, Callback = function(v) Config.ItemChams.Color = v end})
+ChamsSection:Slider({Name = GetText("chams_transp"), Flag = "ChamsTransp", Min = 0, Max = 1, Default = Config.ItemChams.Transparency, Suffix = "", Callback = function(v) Config.ItemChams.Transparency = v end})
+
+-- Misc Page
+local MiscSectionPage = MiscPage:Section({Name = GetText("tab_misc"), Side = 1})
+MiscSectionPage:Toggle({Name = GetText("misc_antiafk"), Flag = "AntiAFK", Default = Config.Misc.AntiAFK, Callback = function(v) Config.Misc.AntiAFK = v end})
+MiscSectionPage:Toggle({Name = GetText("misc_watermark"), Flag = "Watermark", Default = Config.Misc.Watermark, Callback = function(v) Config.Misc.Watermark = v end})
+MiscSectionPage:Toggle({Name = GetText("misc_keybind_overlay"), Flag = "KeybindOverlay", Default = Config.Misc.KeybindOverlay, Callback = function(v) Config.Misc.KeybindOverlay = v end})
+MiscSectionPage:Toggle({Name = GetText("misc_fullbright"), Flag = "Fullbright", Default = Config.Misc.Fullbright, Callback = function(v) SetFullbright(v) Config.Misc.Fullbright = v end})
+MiscSectionPage:Toggle({Name = GetText("misc_infinite_jump"), Flag = "InfiniteJump", Default = Config.Misc.InfiniteJump, Callback = function(v) Config.Misc.InfiniteJump = v end})
+MiscSectionPage:Toggle({Name = GetText("misc_speed_hack"), Flag = "SpeedHack", Default = Config.Misc.SpeedHack, Callback = function(v) Config.Misc.SpeedHack = v end})
+MiscSectionPage:Slider({Name = GetText("misc_speed_value"), Flag = "SpeedValue", Min = 16, Max = 200, Default = Config.Misc.SpeedValue, Suffix = " studs", Callback = function(v) Config.Misc.SpeedValue = v end})
+MiscSectionPage:Toggle({Name = GetText("misc_noclip"), Flag = "Noclip", Default = Config.Misc.Noclip, Callback = function(v) Config.Misc.Noclip = v end})
+
+-- Trigger Page
+local TriggerSection = TriggerPage:Section({Name = GetText("tab_trigger"), Side = 1})
+TriggerSection:Toggle({Name = GetText("trigger_enabled"), Flag = "TriggerEnabled", Default = Config.Trigger.Enabled, Callback = function(v) Config.Trigger.Enabled = v end})
+TriggerSection:Dropdown({Name = GetText("trigger_mode"), Flag = "TriggerMode", Default = {Config.Trigger.Mode}, Items = {GetText("trigger_hold"), GetText("trigger_toggle")}, Multi = false, Callback = function(v) Config.Trigger.Mode = (v[1] == GetText("trigger_hold")) and "Hold" or "Toggle" end})
+TriggerSection:Slider({Name = GetText("trigger_radius"), Flag = "MagnetRadius", Min = 5, Max = 200, Default = Config.Trigger.MagnetRadius, Suffix = " px", Callback = function(v) Config.Trigger.MagnetRadius = v end})
+TriggerSection:Slider({Name = GetText("trigger_reaction"), Flag = "ReactionTime", Min = 0, Max = 0.5, Default = Config.Trigger.ReactionTime, Suffix = " s", Callback = function(v) Config.Trigger.ReactionTime = v end})
+TriggerSection:Slider({Name = GetText("trigger_stop"), Flag = "StopDelay", Min = 0.05, Max = 0.5, Default = Config.Trigger.StopDelay, Suffix = " s", Callback = function(v) Config.Trigger.StopDelay = v end})
+TriggerSection:Toggle({Name = GetText("trigger_teamcheck"), Flag = "TriggerTeamCheck", Default = Config.Trigger.TeamCheck, Callback = function(v) Config.Trigger.TeamCheck = v end})
+
+-- Settings Page
+local KeybindSection = SettingsPage:Section({Name = "Keybinds", Side = 1})
+KeybindSection:Keybind({Name = GetText("key_aimbot"), Flag = "AimbotKey", Default = Config.Aimbot.Bind, Callback = function(v) Config.Aimbot.Bind = v end})
+KeybindSection:Keybind({Name = GetText("key_trigger"), Flag = "TriggerKey", Default = Config.Trigger.Bind, Callback = function(v) Config.Trigger.Bind = v end})
+KeybindSection:Keybind({Name = GetText("key_esp_toggle"), Flag = "ESPToggle", Default = Config.Visuals.ToggleBind, Callback = function(v) Config.Visuals.ToggleBind = v end})
+local MiscSettingsSection = SettingsPage:Section({Name = "Misc", Side = 2})
+MiscSettingsSection:Dropdown({Name = GetText("language"), Flag = "Language", Default = {Language.Current}, Items = {"EN", "RU"}, Multi = false, Callback = function(v) Language.Current = v[1] Library:Notification({Title = "Language Changed", Description = "Interface language updated. Some menu items may require re-execution for full effect.", Duration = 3, Icon = "73789337996373"}) end})
+
+Window:Init()
+
+print("==========================================")
+print("Anyami Project v1.0 ULTIMATE EDITION")
+print("Press RightShift to open menu")
+print("")
+print("FEATURES:")
+print("  ✓ Smooth Rainbow colors")
+print("  ✓ Working Item Chams")
+print("  ✓ Dot + Swastika Crosshair")
+print("  ✓ Full EN/RU Language Support")
+print("==========================================")
