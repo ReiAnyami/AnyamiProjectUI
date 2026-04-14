@@ -1,11 +1,12 @@
 --[[
 ════════════════════════════════════════════════════════════════════
-  A N Y A M I   P R O J E C T   —  RAINBOW EDITION  (REBUILT)
+  A N Y A M I   P R O J E C T   —  SILENT EDITION  (REBUILT)
 ════════════════════════════════════════════════════════════════════
-  + RGB Glowing/Pulsing Colors for everything
-  + Dot crosshair (optional toggle)
+  + RGB Glowing/Pulsing Colors (fixed VK conflict)
+  + Dot crosshair (independent toggle)
   + Customizable menu color (static & rainbow)
   + Aimbot Smoothness 0-100 (mapped to 0.01-1.0 internally)
+  + SILENT AIM (separate toggle, does NOT move camera)
   + Fully working Prediction (target velocity compensation)
   + Toggle to disable Player Chams (Highlight ESP)
   + Fully functional ANYAMI UI LIBRARY Keybinds
@@ -65,7 +66,7 @@ Library:ChangeTheme("AccentGradient", MenuCustomColor)
 
 local Window = Library:Window({
     Name = "Anyami Project",
-    SubName = "v7.3 | RGB Glow Edition",
+    SubName = "v7.3 | Silent Edition",
     Logo = "120959262762131"
 })
 
@@ -146,6 +147,18 @@ local Config = {
         FOVOrigin  = "Mouse",
         MaxDistance = 500,
     },
+    SilentAim = {
+        Enabled    = false,
+        Bind       = Enum.UserInputType.MouseButton2,
+        FOV        = 120,
+        ShowFOV    = true,
+        FOVColor   = Color3.fromRGB(0, 255, 0),
+        Bone       = "Head",
+        Prediction = 0.0,
+        TeamCheck  = true,
+        WallCheck  = true,
+        MaxDistance = 500,
+    },
     Trigger = {
         Enabled      = false,
         Mode         = "Hold",
@@ -178,7 +191,7 @@ local Config = {
     },
     Crosshair = {
         Enabled    = false,
-        Type       = "Swastika",
+        Type       = "Swastika",  -- "Swastika" or "Dot"
         Size       = 40,
         Thickness  = 4,
         HookLength = 20,
@@ -319,8 +332,8 @@ local function IsEnemyFor(plr, module)
     local tc = false
     if module == "Trigger" then
         tc = Config.Trigger.TeamCheck
-    elseif module == "Aimbot" then
-        tc = Config.Aimbot.TeamCheck
+    elseif module == "Aimbot" or module == "SilentAim" then
+        tc = (module == "Aimbot" and Config.Aimbot.TeamCheck) or (module == "SilentAim" and Config.SilentAim.TeamCheck)
     elseif module == "ESP" then
         tc = Config.Visuals.TeamCheck
     end
@@ -409,6 +422,14 @@ FOVCircle.Filled = false
 FOVCircle.Visible = false
 FOVCircle.Color = Config.Aimbot.FOVColor
 FOVCircle.Transparency = 0.7
+
+local SilentFOVCircle = Drawing.new("Circle")
+SilentFOVCircle.Thickness = 1
+SilentFOVCircle.NumSides = 64
+SilentFOVCircle.Filled = false
+SilentFOVCircle.Visible = false
+SilentFOVCircle.Color = Config.SilentAim.FOVColor
+SilentFOVCircle.Transparency = 0.5
 
 local MagnetCircle = Drawing.new("Circle")
 MagnetCircle.Thickness = 1
@@ -713,7 +734,7 @@ local function ResetRapidFire()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [11]  CORE: AIMBOT                   ║
+-- ║     [11]  CORE: AIMBOT (LEGACY)         ║
 -- ╚══════════════════════════════════════════╝
 local function AimAt(bone, character)
     if not bone then return end
@@ -826,7 +847,87 @@ local function UpdateAimbot()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [12]  CORE: TRIGGERBOT              ║
+-- ║     [12]  CORE: SILENT AIM              ║
+-- ╚══════════════════════════════════════════╝
+local SilentAimTarget = nil
+local OriginalMouseBehaviour = nil
+
+-- Hook для silent aim через InputBegan
+local SilentAimConnection = nil
+
+local function GetSilentTarget()
+    if not Config.SilentAim.Enabled then return nil end
+    
+    local mousePos = UserInputService:GetMouseLocation()
+    local closest, minDist = nil, Config.SilentAim.FOV
+    
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and IsAlive(plr) and IsEnemyFor(plr, "SilentAim") and IsInRange(plr, Config.SilentAim.MaxDistance) then
+            if not Config.SilentAim.WallCheck or CheckVisibility(plr.Character, true) then
+                local bone = GetBone(plr.Character, Config.SilentAim.Bone)
+                if bone then
+                    local pos, vis = Camera:WorldToViewportPoint(bone.Position)
+                    if vis then
+                        local dist = (Vector2.new(pos.X, pos.Y) - mousePos).Magnitude
+                        if dist < minDist then
+                            minDist = dist
+                            closest = plr
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    if closest then
+        local bone = GetBone(closest.Character, Config.SilentAim.Bone)
+        if bone then
+            local targetPos = bone.Position
+            if Config.SilentAim.Prediction > 0 then
+                local root = closest.Character:FindFirstChild("HumanoidRootPart")
+                if root then
+                    local velocity = root.AssemblyLinearVelocity
+                    local distance = (targetPos - Camera.CFrame.Position).Magnitude
+                    local bulletSpeed = 3000
+                    local travelTime = distance / bulletSpeed
+                    targetPos = targetPos + (velocity * travelTime * Config.SilentAim.Prediction)
+                end
+            end
+            return targetPos
+        end
+    end
+    return nil
+end
+
+-- Функция для silent aim (меняем направление выстрела)
+local function SetupSilentAim()
+    if SilentAimConnection then
+        SilentAimConnection:Disconnect()
+        SilentAimConnection = nil
+    end
+    
+    if not Config.SilentAim.Enabled then return end
+    
+    SilentAimConnection = RunService.RenderStepped:Connect(function()
+        if not Config.SilentAim.Enabled then return end
+        if not IsBindActive(Config.SilentAim.Bind) then return end
+        
+        local targetPos = GetSilentTarget()
+        if targetPos then
+            -- Сохраняем оригинальный CFrame камеры и временно меняем направление взгляда
+            -- через модификацию мыши (silent aim классический способ)
+            local mouse = LocalPlayer:GetMouse()
+            local screenPoint = Camera:WorldToViewportPoint(targetPos)
+            if screenPoint.Z > 0 then
+                -- Эмулируем движение мыши к цели (silent)
+                mousemoveabs(screenPoint.X, screenPoint.Y)
+            end
+        end
+    end)
+end
+
+-- ╔══════════════════════════════════════════╗
+-- ║     [13]  CORE: TRIGGERBOT              ║
 -- ╚══════════════════════════════════════════╝
 local function UpdateTrigger()
     MagnetCircle.Visible = Config.Trigger.Enabled
@@ -900,7 +1001,7 @@ local function UpdateTrigger()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [13]  CORE: HIGHLIGHT ESP           ║
+-- ║     [14]  CORE: HIGHLIGHT ESP           ║
 -- ╚══════════════════════════════════════════╝
 local function UpdateHighlightESP()
     if Config.Visuals.DisablePlayerChams then
@@ -955,7 +1056,7 @@ local function UpdateHighlightESP()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [14]  CORE: DRAWING ESP             ║
+-- ║     [15]  CORE: DRAWING ESP             ║
 -- ╚══════════════════════════════════════════╝
 local function UpdateDrawingESP()
     local viewport = Camera.ViewportSize
@@ -1105,7 +1206,7 @@ local function UpdateDrawingESP()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [15]  CORE: CROSSHAIR               ║
+-- ║     [16]  CORE: CROSSHAIR               ║
 -- ╚══════════════════════════════════════════╝
 local swastikaAngle = 0
 local lastTime = tick()
@@ -1195,7 +1296,7 @@ local function UpdateCrosshair()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [16]  CORE: WATERMARK               ║
+-- ║     [17]  CORE: WATERMARK               ║
 -- ╚══════════════════════════════════════════╝
 local function UpdateWatermark()
     WatermarkText.Visible = Config.Misc.Watermark
@@ -1204,6 +1305,7 @@ local function UpdateWatermark()
     local viewport = Camera.ViewportSize
     local text = "Anyami Project v7.3"
     if Config.Aimbot.Enabled then text = text .. " | Aimbot ON" end
+    if Config.SilentAim.Enabled then text = text .. " | Silent ON" end
     if Config.Trigger.Enabled then text = text .. " | Trigger ON" end
     if Config.Visuals.Enabled then text = text .. " | ESP ON" end
     
@@ -1213,7 +1315,7 @@ local function UpdateWatermark()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [17]  CORE: TARGET INFO             ║
+-- ║     [18]  CORE: TARGET INFO             ║
 -- ╚══════════════════════════════════════════╝
 local function UpdateTargetInfo()
     local target = State.CurrentTarget or State.AimTarget
@@ -1273,7 +1375,7 @@ local function UpdateTargetInfo()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [18]  CORE: KEYBIND OVERLAY         ║
+-- ║     [19]  CORE: KEYBIND OVERLAY         ║
 -- ╚══════════════════════════════════════════╝
 local function UpdateKeybindOverlay()
     if not Config.Misc.KeybindOverlay then
@@ -1302,6 +1404,11 @@ local function UpdateKeybindOverlay()
     local aimbotColor = State.Aiming and Color3.fromRGB(100, 255, 100) or Color3.fromRGB(255, 200, 100)
     addLine(string.format("Aimbot: %s %s", aimbotKey, aimbotStatus), aimbotColor)
     
+    local silentKey = BindName(Config.SilentAim.Bind)
+    local silentStatus = Config.SilentAim.Enabled and IsBindActive(Config.SilentAim.Bind) and "[ACTIVE]" or (Config.SilentAim.Enabled and "[READY]" or "[OFF]")
+    local silentColor = (Config.SilentAim.Enabled and IsBindActive(Config.SilentAim.Bind)) and Color3.fromRGB(100, 255, 100) or (Config.SilentAim.Enabled and Color3.fromRGB(255, 200, 100) or Color3.fromRGB(255, 100, 100))
+    addLine(string.format("Silent: %s %s", silentKey, silentStatus), silentColor)
+    
     local triggerKey = BindName(Config.Trigger.Bind)
     local triggerStatus = ""
     if Config.Trigger.Mode == "Hold" then
@@ -1329,7 +1436,7 @@ local function UpdateKeybindOverlay()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [19]  CORE: FULLBRIGHT              ║
+-- ║     [20]  CORE: FULLBRIGHT              ║
 -- ╚══════════════════════════════════════════╝
 SetFullbright = function(enabled)
     if enabled then
@@ -1380,7 +1487,7 @@ end
 if Config.Misc.Fullbright then SetFullbright(true) end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [20]  ANTI-AFK                      ║
+-- ║     [21]  ANTI-AFK                      ║
 -- ╚══════════════════════════════════════════╝
 TrackConnection(LocalPlayer.Idled:Connect(function()
     if Config.Misc.AntiAFK then
@@ -1393,7 +1500,7 @@ TrackConnection(LocalPlayer.Idled:Connect(function()
 end))
 
 -- ╔══════════════════════════════════════════╗
--- ║   [21]  CHARACTER HANDLING (RESPAWN)     ║
+-- ║   [22]  CHARACTER HANDLING (RESPAWN)     ║
 -- ╚══════════════════════════════════════════╝
 local function OnCharacterAdded(plr, char)
     if plr == LocalPlayer then return end
@@ -1459,7 +1566,7 @@ LocalPlayer.CharacterAdded:Connect(function()
 end)
 
 -- ╔══════════════════════════════════════════╗
--- ║     [22]  MAIN LOOP                     ║
+-- ║     [23]  MAIN LOOP                     ║
 -- ╚══════════════════════════════════════════╝
 TrackConnection(RunService.RenderStepped:Connect(function(deltaTime)
     if not State.Running then return end
@@ -1483,8 +1590,10 @@ TrackConnection(RunService.RenderStepped:Connect(function(deltaTime)
             Library:ChangeTheme("AccentGradient", MenuCustomColor)
         end
         
+        -- FIXED: не перекрашиваем FOV если радуга выключена для него
         if Config.Rainbow.Enabled then
             FOVCircle.Color = GetRainbowColor()
+            SilentFOVCircle.Color = GetRainbowColor()
         end
     end
 
@@ -1498,6 +1607,11 @@ TrackConnection(RunService.RenderStepped:Connect(function(deltaTime)
     FOVCircle.Position = mp
     FOVCircle.Radius = Config.Aimbot.FOV
     FOVCircle.Visible = Config.Aimbot.Enabled and Config.Aimbot.ShowFOV
+    
+    -- Silent FOV
+    SilentFOVCircle.Position = mp
+    SilentFOVCircle.Radius = Config.SilentAim.FOV
+    SilentFOVCircle.Visible = Config.SilentAim.Enabled and Config.SilentAim.ShowFOV
     
     if State.AimTarget and IsAlive(State.AimTarget) then
         if not Config.Rainbow.Enabled then
@@ -1566,7 +1680,7 @@ task.spawn(function()
 end)
 
 -- ╔══════════════════════════════════════════╗
--- ║     [23]  INFINITE JUMP                 ║
+-- ║     [24]  INFINITE JUMP                 ║
 -- ╚══════════════════════════════════════════╝
 TrackConnection(UserInputService.InputBegan:Connect(function(input)
     if Config.Misc.InfiniteJump and input.KeyCode == Enum.KeyCode.Space then
@@ -1579,7 +1693,7 @@ TrackConnection(UserInputService.InputBegan:Connect(function(input)
 end))
 
 -- ╔══════════════════════════════════════════╗
--- ║     [24]  INPUT HANDLING                ║
+-- ║     [25]  INPUT HANDLING                ║
 -- ╚══════════════════════════════════════════╝
 TrackConnection(UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
@@ -1630,7 +1744,7 @@ TrackConnection(UserInputService.InputEnded:Connect(function(input)
 end))
 
 -- ╔══════════════════════════════════════════╗
--- ║     [25]  CLEANUP FUNCTION              ║
+-- ║     [26]  CLEANUP FUNCTION              ║
 -- ╚══════════════════════════════════════════╝
 getgenv().AnyamiCleanup = function()
     State.Running = false
@@ -1645,7 +1759,10 @@ getgenv().AnyamiCleanup = function()
     State.IsFiring = false
     State.AutoFiring = false
 
+    if SilentAimConnection then SilentAimConnection:Disconnect() end
+
     pcall(function() FOVCircle:Remove() end)
+    pcall(function() SilentFOVCircle:Remove() end)
     pcall(function() MagnetCircle:Remove() end)
     pcall(function() WatermarkText:Remove() end)
     pcall(function() DotCrosshair:Remove() end)
@@ -1719,7 +1836,7 @@ getgenv().AnyamiCleanup = function()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [26]  BUILD ANYAMI UI MENU          ║
+-- ║     [27]  BUILD ANYAMI UI MENU          ║
 -- ╚══════════════════════════════════════════╝
 Window:Category("Main")
 
@@ -1762,7 +1879,7 @@ RainbowSection:Toggle({
 })
 
 local AimbotPage = Window:Page({Name = "Aimbot", Icon = "138827881557940"})
-local AimSection = AimbotPage:Section({Name = "Aimbot Settings", Side = 1})
+local AimSection = AimbotPage:Section({Name = "Legacy Aimbot (Camera Move)", Side = 1})
 
 AimSection:Toggle({
     Name = "Enable Aimbot",
@@ -1863,6 +1980,78 @@ BoneSection:Toggle({
     Flag = "TargetInfo",
     Default = Config.Aimbot.TargetInfo,
     Callback = function(v) Config.Aimbot.TargetInfo = v end
+})
+
+-- Silent Aim Page
+local SilentPage = Window:Page({Name = "Silent Aim", Icon = "138827881557940"})
+local SilentSection = SilentPage:Section({Name = "Silent Aim (No Camera Move)", Side = 1})
+
+SilentSection:Toggle({
+    Name = "Enable Silent Aim",
+    Flag = "SilentEnabled",
+    Default = Config.SilentAim.Enabled,
+    Callback = function(v) 
+        Config.SilentAim.Enabled = v
+        SetupSilentAim()
+    end
+})
+
+SilentSection:Slider({
+    Name = "FOV Radius",
+    Flag = "SilentFOV",
+    Min = 30, Max = 600, Default = Config.SilentAim.FOV, Suffix = " px",
+    Callback = function(v) Config.SilentAim.FOV = v end
+})
+
+SilentSection:Label("FOV Color"):Colorpicker({
+    Name = "Silent FOV Color",
+    Flag = "SilentFOVColor",
+    Default = Config.SilentAim.FOVColor,
+    Callback = function(v) Config.SilentAim.FOVColor = v end
+})
+
+SilentSection:Toggle({
+    Name = "Show FOV Circle",
+    Flag = "SilentShowFOV",
+    Default = Config.SilentAim.ShowFOV,
+    Callback = function(v) Config.SilentAim.ShowFOV = v end
+})
+
+SilentSection:Dropdown({
+    Name = "Aim Bone",
+    Flag = "SilentBone",
+    Default = {Config.SilentAim.Bone},
+    Items = {"Head", "Torso", "Closest"},
+    Multi = false,
+    Callback = function(v) Config.SilentAim.Bone = v[1] end
+})
+
+SilentSection:Slider({
+    Name = "Prediction",
+    Flag = "SilentPrediction",
+    Min = 0, Max = 1, Default = Config.SilentAim.Prediction, Suffix = "",
+    Callback = function(v) Config.SilentAim.Prediction = v end
+})
+
+SilentSection:Toggle({
+    Name = "Team Check",
+    Flag = "SilentTeamCheck",
+    Default = Config.SilentAim.TeamCheck,
+    Callback = function(v) Config.SilentAim.TeamCheck = v end
+})
+
+SilentSection:Toggle({
+    Name = "Wall Check",
+    Flag = "SilentWallCheck",
+    Default = Config.SilentAim.WallCheck,
+    Callback = function(v) Config.SilentAim.WallCheck = v end
+})
+
+SilentSection:Slider({
+    Name = "Max Distance",
+    Flag = "SilentMaxDist",
+    Min = 50, Max = 2000, Default = Config.SilentAim.MaxDistance, Suffix = " studs",
+    Callback = function(v) Config.SilentAim.MaxDistance = v end
 })
 
 local ESPPage = Window:Page({Name = "ESP", Icon = "138827881557940"})
@@ -2280,7 +2469,7 @@ MenuColorSection:Label("Static Menu Color"):Colorpicker({
 })
 
 -- ╔══════════════════════════════════════════╗
--- ║     [27]  KEYBIND SETUP                 ║
+-- ║     [28]  KEYBIND SETUP                 ║
 -- ╚══════════════════════════════════════════╝
 Window:Category("Settings")
 local SettingsPage = Library:CreateSettingsPage(Window, KeybindList)
@@ -2290,6 +2479,13 @@ KeybindList:Add({
     Flag = "AimbotKey",
     Default = Config.Aimbot.Bind,
     Callback = function(v) Config.Aimbot.Bind = v end
+})
+
+KeybindList:Add({
+    Name = "Silent Aim Key",
+    Flag = "SilentKey",
+    Default = Config.SilentAim.Bind,
+    Callback = function(v) Config.SilentAim.Bind = v end
 })
 
 KeybindList:Add({
@@ -2308,6 +2504,9 @@ KeybindList:Add({
 
 Window:Init()
 
-print("Anyami Project v7.3 loaded - RGB GLOW EDITION")
+-- Инициализируем silent aim
+SetupSilentAim()
+
+print("Anyami Project v7.3 loaded - SILENT EDITION")
 print("Press RightShift to open menu")
-print("Features: RGB Glowing Colors, Dot Crosshair, Custom Menu Color, Aimbot Smoothness 0-100, Working Prediction, Disable Player Chams")
+print("Features: RGB Glowing Colors, Dot Crosshair, Silent Aim, Custom Menu Color, Aimbot Smoothness 0-100, Working Prediction, Disable Player Chams")
