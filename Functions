@@ -1,18 +1,15 @@
 --[[
 ════════════════════════════════════════════════════════════════════
-  A N Y A M I   P R O J E C T   —  WEAPON CHAMS EDITION
+  A N Y A M I   P R O J E C T   —  ULTIMATE EDITION
 ════════════════════════════════════════════════════════════════════
-  + Weapon Chams (CS2 style) — glowing weapons in hands
-  + RGB Glowing/Pulsing Colors
-  + Dot crosshair (independent toggle)
-  + Silent Aim + Legacy Aimbot
-  + Fully functional
+  + Weapon Chams (материал + цвет, перелив)
+  + Rainbow всё (меню, чамсы, ESP, прицел)
+  + Silent Aim (встроен нахуй)
+  + Aimbot без smooth, с предиктом 0-3
+  + Dot crosshair отдельно
 ════════════════════════════════════════════════════════════════════
 ]]
 
--- ╔══════════════════════════════════════════╗
--- ║     [0]  LOAD ANYAMI UI LIBRARY         ║
--- ╚══════════════════════════════════════════╝
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ReiAnyami/AnyamiProjectUI/refs/heads/main/main"))()
 local CheatName = "AnyamiProject"
 
@@ -23,7 +20,7 @@ Library.Folders = {
 }
 
 -- ╔══════════════════════════════════════════╗
--- ║     [RAINBOW GLOW SYSTEM]               ║
+-- ║     RAINBOW CORE                         ║
 -- ╚══════════════════════════════════════════╝
 local RainbowState = {
     Enabled = false,
@@ -38,7 +35,7 @@ local function GetRainbowColor()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [THEME SETUP]                       ║
+-- ║     THEME SETUP                          ║
 -- ╚══════════════════════════════════════════╝
 local MenuCustomColor = Color3.fromRGB(255, 80, 80)
 local function UpdateThemeColors()
@@ -63,7 +60,7 @@ Library:ChangeTheme("AccentGradient", MenuCustomColor)
 
 local Window = Library:Window({
     Name = "Anyami Project",
-    SubName = "v7.3 | Weapon Chams",
+    SubName = "v8.0 | Ultimate",
     Logo = "120959262762131"
 })
 
@@ -72,7 +69,7 @@ local KeybindList = Library:KeybindList("Keybinds")
 -- Watermark
 Library:Watermark({
     "Anyami Project",
-    "v7.3",
+    "v8.0",
     120959262762131
 })
 
@@ -81,7 +78,7 @@ task.spawn(function()
         local FPS = math.floor(1 / game:GetService("RunService").RenderStepped:Wait())
         Library:Watermark({
             "Anyami Project",
-            "v7.3",
+            "v8.0",
             120959262762131,
             "FPS: " .. FPS
         })
@@ -90,7 +87,7 @@ task.spawn(function()
 end)
 
 -- ╔══════════════════════════════════════════╗
--- ║        [1]  SERVICES & SETUP            ║
+-- ║        SERVICES                          ║
 -- ╚══════════════════════════════════════════╝
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -108,7 +105,7 @@ end
 local SetFullbright
 
 -- ╔══════════════════════════════════════════╗
--- ║        [2]  CONFIGURATION               ║
+-- ║        CONFIGURATION                     ║
 -- ╚══════════════════════════════════════════╝
 local Config = {
     Rainbow = {
@@ -131,7 +128,6 @@ local Config = {
         Bind       = Enum.UserInputType.MouseButton2,
         FOV        = 150,
         FOVColor   = Color3.fromRGB(255, 255, 255),
-        Smoothness = 50,
         ShowFOV    = true,
         TargetLock = true,
         Bone       = "Head",
@@ -145,16 +141,17 @@ local Config = {
         MaxDistance = 500,
     },
     SilentAim = {
-        Enabled    = false,
-        Bind       = Enum.UserInputType.MouseButton2,
-        FOV        = 120,
-        ShowFOV    = true,
-        FOVColor   = Color3.fromRGB(0, 255, 0),
-        Bone       = "Head",
-        Prediction = 0.0,
-        TeamCheck  = true,
-        WallCheck  = true,
-        MaxDistance = 500,
+        Enabled      = false,
+        Bind         = Enum.KeyCode.RightAlt,
+        FOV          = 130,
+        ShowFOV      = true,
+        FOVColor     = Color3.fromRGB(54, 57, 241),
+        Bone         = "Head",
+        Prediction   = 0.165,
+        TeamCheck    = false,
+        WallCheck    = false,
+        MaxDistance  = 2000,
+        HitChance    = 100,
     },
     Trigger = {
         Enabled      = false,
@@ -193,17 +190,15 @@ local Config = {
         Transparency = 0.3,
         Rainbow      = false,
         GlowEffect   = true,
-        OnlyVisible  = false,
     },
     Crosshair = {
         Enabled    = false,
-        Type       = "Swastika",
+        Type       = "Dot",
         Size       = 40,
         Thickness  = 4,
         HookLength = 20,
         Color      = Color3.fromRGB(255, 0, 0),
         Rainbow    = false,
-        RotationSpeed = 90,
         DotSize    = 4,
     },
     Combat = {
@@ -214,7 +209,6 @@ local Config = {
     },
     Misc = {
         AntiAFK        = true,
-        AntiKick       = false,
         Watermark      = true,
         Fullbright     = false,
         InfiniteJump   = false,
@@ -236,7 +230,7 @@ local Config = {
 }
 
 -- ╔══════════════════════════════════════════╗
--- ║     [3]  STATE & CONNECTION TRACKER     ║
+-- ║        STATE                             ║
 -- ╚══════════════════════════════════════════╝
 local State = {
     Aiming            = false,
@@ -258,7 +252,7 @@ local OriginalLight = {}
 local LastShotTime = 0
 local AutoClickerConnection = nil
 local ItemChamsCache = {}
-local WeaponChamsCache = {}  -- для восстановления оригинальных материалов оружия
+local WeaponChamsCache = {}
 
 local function TrackConnection(conn)
     table.insert(Connections, conn)
@@ -266,7 +260,7 @@ local function TrackConnection(conn)
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║       [4]  INPUT HELPERS                ║
+-- ║        INPUT HELPERS                     ║
 -- ╚══════════════════════════════════════════╝
 local InputManager = {}
 function InputManager.Press()
@@ -318,7 +312,7 @@ local function BindName(bind)
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║       [5]  UTILITY FUNCTIONS            ║
+-- ║        UTILITY                           ║
 -- ╚══════════════════════════════════════════╝
 local RayParams = RaycastParams.new()
 RayParams.FilterType = Enum.RaycastFilterType.Exclude
@@ -339,8 +333,10 @@ local function IsEnemyFor(plr, module)
     local tc = false
     if module == "Trigger" then
         tc = Config.Trigger.TeamCheck
-    elseif module == "Aimbot" or module == "SilentAim" then
-        tc = (module == "Aimbot" and Config.Aimbot.TeamCheck) or (module == "SilentAim" and Config.SilentAim.TeamCheck)
+    elseif module == "Aimbot" then
+        tc = Config.Aimbot.TeamCheck
+    elseif module == "SilentAim" then
+        tc = Config.SilentAim.TeamCheck
     elseif module == "ESP" then
         tc = Config.Visuals.TeamCheck
     end
@@ -419,8 +415,14 @@ local function GetBoneConnections(char)
     return char:FindFirstChild("UpperTorso") and R15Bones or R6Bones
 end
 
+local function CalculateChance(percentage)
+    percentage = math.floor(percentage)
+    local chance = math.random() / 100
+    return chance <= percentage / 100
+end
+
 -- ╔══════════════════════════════════════════╗
--- ║       [6]  DRAWING OBJECTS              ║
+-- ║        DRAWING OBJECTS                   ║
 -- ╚══════════════════════════════════════════╝
 local FOVCircle = Drawing.new("Circle")
 FOVCircle.Thickness = 1
@@ -445,14 +447,6 @@ MagnetCircle.Filled = false
 MagnetCircle.Visible = false
 MagnetCircle.Color = Color3.fromRGB(255, 50, 50)
 MagnetCircle.Transparency = 0.6
-
-local SwastikaLines = {}
-for i = 1, 8 do
-    SwastikaLines[i] = Drawing.new("Line")
-    SwastikaLines[i].Thickness = Config.Crosshair.Thickness
-    SwastikaLines[i].Color = Config.Crosshair.Color
-    SwastikaLines[i].Visible = false
-end
 
 local DotCrosshair = Drawing.new("Circle")
 DotCrosshair.Thickness = 0
@@ -508,7 +502,7 @@ SnapLineObj.Visible = false
 SnapLineObj.Color = Color3.fromRGB(255, 255, 0)
 
 -- ╔══════════════════════════════════════════╗
--- ║       [7]  ESP DRAWING CACHE            ║
+-- ║        ESP DRAWING CACHE                 ║
 -- ╚══════════════════════════════════════════╝
 local MAX_SKELETON = 14
 
@@ -584,7 +578,7 @@ local function RemoveESP(plr)
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [8]  CORE: WEAPON CHAMS (CS2 STYLE) ║
+-- ║        WEAPON CHAMS (РАБОЧИЕ)           ║
 -- ╚══════════════════════════════════════════╝
 local MaterialMap = {
     Neon = Enum.Material.Neon,
@@ -600,26 +594,24 @@ local MaterialMap = {
 
 local function ApplyWeaponChams()
     local char = LocalPlayer.Character
-    if not char then 
-        -- чистим кэш если персонажа нет
+    if not char then
         for part, original in pairs(WeaponChamsCache) do
             pcall(function()
-                if part then
-                    part.Material = original
-                end
+                if part then part.Material = original end
+                local glow = part:FindFirstChild("WeaponGlow")
+                if glow then glow:Destroy() end
             end)
         end
         WeaponChamsCache = {}
-        return 
+        return
     end
     
     if not Config.WeaponChams.Enabled then
-        -- восстанавливаем оригинальные материалы
         for part, original in pairs(WeaponChamsCache) do
             pcall(function()
-                if part then
-                    part.Material = original
-                end
+                if part then part.Material = original end
+                local glow = part:FindFirstChild("WeaponGlow")
+                if glow then glow:Destroy() end
             end)
         end
         WeaponChamsCache = {}
@@ -629,7 +621,6 @@ local function ApplyWeaponChams()
     local chamsColor = Config.WeaponChams.Rainbow and GetRainbowColor() or Config.WeaponChams.Color
     local targetMaterial = MaterialMap[Config.WeaponChams.Material] or Enum.Material.Neon
     
-    -- Ищем всё оружие в персонаже
     local tools = {}
     for _, child in ipairs(char:GetChildren()) do
         if child:IsA("Tool") then
@@ -637,7 +628,6 @@ local function ApplyWeaponChams()
         end
     end
     
-    -- Также ищем в руках (иногда оружие не в Tool)
     local arms = char:FindFirstChild("UpperTorso") or char:FindFirstChild("Torso")
     if arms then
         for _, child in ipairs(arms:GetChildren()) do
@@ -648,22 +638,17 @@ local function ApplyWeaponChams()
     end
     
     for _, tool in ipairs(tools) do
-        -- Обрабатываем все части оружия
         for _, part in ipairs(tool:GetDescendants()) do
             if part:IsA("BasePart") then
-                -- Сохраняем оригинальный материал если ещё не сохранили
                 if not WeaponChamsCache[part] then
                     WeaponChamsCache[part] = part.Material
                 end
                 
-                -- Применяем чамсы
                 part.Material = targetMaterial
                 part.Color = chamsColor
                 part.Transparency = Config.WeaponChams.Transparency
                 
-                -- Эффект свечения (CS2 style) - добавляем Neon свечение через дополнительный слой
                 if Config.WeaponChams.GlowEffect then
-                    -- Создаём или обновляем BillboardGui для свечения
                     local glow = part:FindFirstChild("WeaponGlow")
                     if not glow then
                         glow = Instance.new("BillboardGui")
@@ -700,13 +685,10 @@ local function ApplyWeaponChams()
         end
     end
     
-    -- Чистим кэш для частей, которые больше не существуют
     for part, _ in pairs(WeaponChamsCache) do
         if not part.Parent or not part:IsDescendantOf(char) then
             pcall(function()
-                if part then
-                    part.Material = WeaponChamsCache[part]
-                end
+                if part then part.Material = WeaponChamsCache[part] end
                 local glow = part:FindFirstChild("WeaponGlow")
                 if glow then glow:Destroy() end
             end)
@@ -716,15 +698,13 @@ local function ApplyWeaponChams()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [9]  CORE: ITEM CHAMS (левые предметы) ║
+-- ║        ITEM CHAMS                        ║
 -- ╚══════════════════════════════════════════╝
 local function ApplyItemChams()
     if not Config.ItemChams.Enabled then
         for part, original in pairs(ItemChamsCache) do
             pcall(function()
-                if part then
-                    part.Material = original
-                end
+                if part then part.Material = original end
             end)
         end
         ItemChamsCache = {}
@@ -755,7 +735,7 @@ local function ApplyItemChams()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [10]  CORE: HITBOX EXPANDER         ║
+-- ║        HITBOX EXPANDER                   ║
 -- ╚══════════════════════════════════════════╝
 local function GetBodyParts(char)
     local parts = {}
@@ -804,7 +784,7 @@ local function UpdateHitboxes()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [11]  CORE: RAPID FIRE              ║
+-- ║        RAPID FIRE                        ║
 -- ╚══════════════════════════════════════════╝
 local function SafeClick()
     pcall(function()
@@ -854,7 +834,7 @@ local function ResetRapidFire()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [12]  CORE: AIMBOT (LEGACY)         ║
+-- ║        AIMBOT (БЕЗ SMOOTH)              ║
 -- ╚══════════════════════════════════════════╝
 local function AimAt(bone, character)
     if not bone then return end
@@ -871,18 +851,8 @@ local function AimAt(bone, character)
         end
     end
     
-    local dir = (targetPos - Camera.CFrame.Position).Unit
-    local dot = Camera.CFrame.LookVector:Dot(dir)
-    local angleFactor = math.clamp(1 - dot, 0, 1)
-    
-    local smoothValue = Config.Aimbot.Smoothness / 100
-    smoothValue = math.clamp(smoothValue, 0.01, 1)
-    
-    local finalSmooth = smoothValue * (0.3 + 0.7 * angleFactor)
-    finalSmooth = math.clamp(finalSmooth, 0.01, 0.95)
-    
     local targetCF = CFrame.new(Camera.CFrame.Position, targetPos)
-    Camera.CFrame = Camera.CFrame:Lerp(targetCF, finalSmooth)
+    Camera.CFrame = targetCF  -- без smooth, нахуй
 end
 
 local function UpdateAimbot()
@@ -967,11 +937,11 @@ local function UpdateAimbot()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [13]  CORE: SILENT AIM              ║
+-- ║        SILENT AIM (ВСТРОЕН)             ║
 -- ╚══════════════════════════════════════════╝
 local SilentAimConnection = nil
 
-local function GetSilentTarget()
+local function GetSilentTargetPosition()
     if not Config.SilentAim.Enabled then return nil end
     
     local mousePos = UserInputService:GetMouseLocation()
@@ -1027,7 +997,10 @@ local function SetupSilentAim()
         if not Config.SilentAim.Enabled then return end
         if not IsBindActive(Config.SilentAim.Bind) then return end
         
-        local targetPos = GetSilentTarget()
+        local chance = Config.SilentAim.HitChance
+        if chance < 100 and math.random() > chance / 100 then return end
+        
+        local targetPos = GetSilentTargetPosition()
         if targetPos then
             local screenPoint = Camera:WorldToViewportPoint(targetPos)
             if screenPoint.Z > 0 then
@@ -1038,7 +1011,7 @@ local function SetupSilentAim()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [14]  CORE: TRIGGERBOT              ║
+-- ║        TRIGGERBOT                        ║
 -- ╚══════════════════════════════════════════╝
 local function UpdateTrigger()
     MagnetCircle.Visible = Config.Trigger.Enabled
@@ -1112,7 +1085,7 @@ local function UpdateTrigger()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [15]  CORE: HIGHLIGHT ESP           ║
+-- ║        HIGHLIGHT ESP                     ║
 -- ╚══════════════════════════════════════════╝
 local function UpdateHighlightESP()
     if Config.Visuals.DisablePlayerChams then
@@ -1167,7 +1140,7 @@ local function UpdateHighlightESP()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [16]  CORE: DRAWING ESP             ║
+-- ║        DRAWING ESP                       ║
 -- ╚══════════════════════════════════════════╝
 local function UpdateDrawingESP()
     local viewport = Camera.ViewportSize
@@ -1317,104 +1290,30 @@ local function UpdateDrawingESP()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [17]  CORE: CROSSHAIR               ║
+-- ║        CROSSHAIR (ТОЛЬКО DOT)           ║
 -- ╚══════════════════════════════════════════╝
-local swastikaAngle = 0
-local lastTime = tick()
-
-local function UpdateSwastikaCrosshair()
-    local center = Camera.ViewportSize / 2
-    local cx, cy = center.X, center.Y
-    local armLength = Config.Crosshair.Size
-    local hookLength = Config.Crosshair.HookLength
-    local thick = Config.Crosshair.Thickness
-    
-    local crosshairColor = Config.Crosshair.Rainbow and GetRainbowColor() or Config.Crosshair.Color
-    
-    for i = 1, 8 do
-        SwastikaLines[i].Thickness = thick
-        SwastikaLines[i].Color = crosshairColor
-    end
-    
-    local now = tick()
-    local deltaTime = math.min(0.033, now - lastTime)
-    lastTime = now
-    
-    local rotSpeed = Config.Crosshair.RotationSpeed or 90
-    swastikaAngle = swastikaAngle + rotSpeed * deltaTime
-    if swastikaAngle >= 360 then swastikaAngle = swastikaAngle - 360 end
-    
-    local rad = math.rad(swastikaAngle)
-    local cosA = math.cos(rad)
-    local sinA = math.sin(rad)
-    
-    local directions = {
-        {dx = 0,  dy = -1},
-        {dx = 1,  dy = 0},
-        {dx = 0,  dy = 1},
-        {dx = -1, dy = 0}
-    }
-    
-    local hookDirs = {
-        {hx = 1,  hy = 0},
-        {hx = 0,  hy = 1},
-        {hx = -1, hy = 0},
-        {hx = 0,  hy = -1}
-    }
-    
-    for i = 1, 4 do
-        local dir = directions[i]
-        local mainEnd = Vector2.new(dir.dx * armLength, dir.dy * armLength)
-        
-        local rotatedEndX = mainEnd.X * cosA - mainEnd.Y * sinA
-        local rotatedEndY = mainEnd.X * sinA + mainEnd.Y * cosA
-        local rotatedEnd = Vector2.new(rotatedEndX, rotatedEndY)
-        
-        SwastikaLines[i*2 - 1].From = Vector2.new(cx, cy)
-        SwastikaLines[i*2 - 1].To = Vector2.new(cx + rotatedEnd.X, cy + rotatedEnd.Y)
-        
-        local hookDir = hookDirs[i]
-        local hookVec = Vector2.new(hookDir.hx * hookLength, hookDir.hy * hookLength)
-        
-        local rotatedHookX = hookVec.X * cosA - hookVec.Y * sinA
-        local rotatedHookY = hookVec.X * sinA + hookVec.Y * cosA
-        local rotatedHook = Vector2.new(rotatedHookX, rotatedHookY)
-        
-        SwastikaLines[i*2].From = Vector2.new(cx + rotatedEnd.X, cy + rotatedEnd.Y)
-        SwastikaLines[i*2].To = Vector2.new(cx + rotatedEnd.X + rotatedHook.X, cy + rotatedEnd.Y + rotatedHook.Y)
-    end
-end
-
 local function UpdateCrosshair()
     if not Config.Crosshair.Enabled then
-        for i = 1, 8 do SwastikaLines[i].Visible = false end
         DotCrosshair.Visible = false
         return
     end
     
-    if Config.Crosshair.Type == "Dot" then
-        for i = 1, 8 do SwastikaLines[i].Visible = false end
-        local center = Camera.ViewportSize / 2
-        DotCrosshair.Position = Vector2.new(center.X, center.Y)
-        DotCrosshair.Radius = Config.Crosshair.DotSize
-        DotCrosshair.Color = Config.Crosshair.Rainbow and GetRainbowColor() or Config.Crosshair.Color
-        DotCrosshair.Visible = true
-    else
-        DotCrosshair.Visible = false
-        UpdateSwastikaCrosshair()
-        for i = 1, 8 do SwastikaLines[i].Visible = true end
-    end
+    local center = Camera.ViewportSize / 2
+    DotCrosshair.Position = Vector2.new(center.X, center.Y)
+    DotCrosshair.Radius = Config.Crosshair.DotSize
+    DotCrosshair.Color = Config.Crosshair.Rainbow and GetRainbowColor() or Config.Crosshair.Color
+    DotCrosshair.Visible = true
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [18]  CORE: WATERMARK               ║
+-- ║        WATERMARK                         ║
 -- ╚══════════════════════════════════════════╝
 local function UpdateWatermark()
     WatermarkText.Visible = Config.Misc.Watermark
     if not Config.Misc.Watermark then return end
     
     local viewport = Camera.ViewportSize
-    local text = "Anyami Project v7.3"
+    local text = "Anyami Project v8.0"
     if Config.Aimbot.Enabled then text = text .. " | Aimbot ON" end
     if Config.SilentAim.Enabled then text = text .. " | Silent ON" end
     if Config.Trigger.Enabled then text = text .. " | Trigger ON" end
@@ -1427,7 +1326,7 @@ local function UpdateWatermark()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [19]  CORE: TARGET INFO             ║
+-- ║        TARGET INFO                       ║
 -- ╚══════════════════════════════════════════╝
 local function UpdateTargetInfo()
     local target = State.CurrentTarget or State.AimTarget
@@ -1487,7 +1386,7 @@ local function UpdateTargetInfo()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [20]  CORE: KEYBIND OVERLAY         ║
+-- ║        KEYBIND OVERLAY                   ║
 -- ╚══════════════════════════════════════════╝
 local function UpdateKeybindOverlay()
     if not Config.Misc.KeybindOverlay then
@@ -1552,7 +1451,7 @@ local function UpdateKeybindOverlay()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [21]  CORE: FULLBRIGHT              ║
+-- ║        FULLBRIGHT                        ║
 -- ╚══════════════════════════════════════════╝
 SetFullbright = function(enabled)
     if enabled then
@@ -1603,7 +1502,7 @@ end
 if Config.Misc.Fullbright then SetFullbright(true) end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [22]  ANTI-AFK                      ║
+-- ║        ANTI-AFK                          ║
 -- ╚══════════════════════════════════════════╝
 TrackConnection(LocalPlayer.Idled:Connect(function()
     if Config.Misc.AntiAFK then
@@ -1616,7 +1515,7 @@ TrackConnection(LocalPlayer.Idled:Connect(function()
 end))
 
 -- ╔══════════════════════════════════════════╗
--- ║   [23]  CHARACTER HANDLING (RESPAWN)     ║
+-- ║        CHARACTER HANDLING                ║
 -- ╚══════════════════════════════════════════╝
 local function OnCharacterAdded(plr, char)
     if plr == LocalPlayer then return end
@@ -1679,12 +1578,9 @@ end))
 
 LocalPlayer.CharacterAdded:Connect(function()
     ResetRapidFire()
-    -- чистим кэш оружия при респавне
     for part, original in pairs(WeaponChamsCache) do
         pcall(function()
-            if part then
-                part.Material = original
-            end
+            if part then part.Material = original end
             local glow = part:FindFirstChild("WeaponGlow")
             if glow then glow:Destroy() end
         end)
@@ -1693,7 +1589,7 @@ LocalPlayer.CharacterAdded:Connect(function()
 end)
 
 -- ╔══════════════════════════════════════════╗
--- ║     [24]  MAIN LOOP                     ║
+-- ║        MAIN LOOP                         ║
 -- ╚══════════════════════════════════════════╝
 TrackConnection(RunService.RenderStepped:Connect(function(deltaTime)
     if not State.Running then return end
@@ -1755,7 +1651,7 @@ TrackConnection(RunService.RenderStepped:Connect(function(deltaTime)
     pcall(UpdateTargetInfo)
     pcall(UpdateKeybindOverlay)
     pcall(ApplyItemChams)
-    pcall(ApplyWeaponChams)  -- weapon chams каждый кадр
+    pcall(ApplyWeaponChams)
 
     if Config.Aimbot.SnapLine and State.Aiming and State.CurrentTarget and IsAlive(State.CurrentTarget) then
         local bone = GetBone(State.CurrentTarget.Character, Config.Aimbot.Bone)
@@ -1806,7 +1702,7 @@ task.spawn(function()
 end)
 
 -- ╔══════════════════════════════════════════╗
--- ║     [25]  INFINITE JUMP                 ║
+-- ║        INFINITE JUMP                     ║
 -- ╚══════════════════════════════════════════╝
 TrackConnection(UserInputService.InputBegan:Connect(function(input)
     if Config.Misc.InfiniteJump and input.KeyCode == Enum.KeyCode.Space then
@@ -1819,7 +1715,7 @@ TrackConnection(UserInputService.InputBegan:Connect(function(input)
 end))
 
 -- ╔══════════════════════════════════════════╗
--- ║     [26]  INPUT HANDLING                ║
+-- ║        INPUT HANDLING                    ║
 -- ╚══════════════════════════════════════════╝
 TrackConnection(UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
@@ -1870,7 +1766,7 @@ TrackConnection(UserInputService.InputEnded:Connect(function(input)
 end))
 
 -- ╔══════════════════════════════════════════╗
--- ║     [27]  CLEANUP FUNCTION              ║
+-- ║        CLEANUP                           ║
 -- ╚══════════════════════════════════════════╝
 getgenv().AnyamiCleanup = function()
     State.Running = false
@@ -1892,7 +1788,6 @@ getgenv().AnyamiCleanup = function()
     pcall(function() MagnetCircle:Remove() end)
     pcall(function() WatermarkText:Remove() end)
     pcall(function() DotCrosshair:Remove() end)
-    for i = 1, 8 do pcall(function() SwastikaLines[i]:Remove() end) end
     for _, key in ipairs({"Name", "Info", "BarBg", "BarFill"}) do
         pcall(function() TgtInfo[key]:Remove() end)
     end
@@ -1931,12 +1826,9 @@ getgenv().AnyamiCleanup = function()
         end)
     end
 
-    -- clean weapon chams
     for part, original in pairs(WeaponChamsCache) do
         pcall(function()
-            if part then
-                part.Material = original
-            end
+            if part then part.Material = original end
             local glow = part:FindFirstChild("WeaponGlow")
             if glow then glow:Destroy() end
         end)
@@ -1945,9 +1837,7 @@ getgenv().AnyamiCleanup = function()
 
     for part, original in pairs(ItemChamsCache) do
         pcall(function()
-            if part then
-                part.Material = original
-            end
+            if part then part.Material = original end
         end)
     end
     ItemChamsCache = {}
@@ -1973,7 +1863,7 @@ getgenv().AnyamiCleanup = function()
 end
 
 -- ╔══════════════════════════════════════════╗
--- ║     [28]  BUILD ANYAMI UI MENU          ║
+-- ║        UI MENU                           ║
 -- ╚══════════════════════════════════════════╝
 Window:Category("Main")
 
@@ -2023,7 +1913,7 @@ RainbowSection:Toggle({
 })
 
 local AimbotPage = Window:Page({Name = "Aimbot", Icon = "138827881557940"})
-local AimSection = AimbotPage:Section({Name = "Legacy Aimbot (Camera Move)", Side = 1})
+local AimSection = AimbotPage:Section({Name = "Legacy Aimbot (без смута, нахуй)", Side = 1})
 
 AimSection:Toggle({
     Name = "Enable Aimbot",
@@ -2044,13 +1934,6 @@ AimSection:Label("FOV Color"):Colorpicker({
     Flag = "FOVColor",
     Default = Config.Aimbot.FOVColor,
     Callback = function(v) Config.Aimbot.FOVColor = v end
-})
-
-AimSection:Slider({
-    Name = "Smoothness (0-100)",
-    Flag = "AimbotSmooth",
-    Min = 0, Max = 100, Default = Config.Aimbot.Smoothness, Suffix = "",
-    Callback = function(v) Config.Aimbot.Smoothness = v end
 })
 
 AimSection:Toggle({
@@ -2106,9 +1989,9 @@ BoneSection:Dropdown({
 })
 
 BoneSection:Slider({
-    Name = "Prediction (0 = off, 1 = full)",
+    Name = "Prediction (0 - 3)",
     Flag = "Prediction",
-    Min = 0, Max = 1, Default = Config.Aimbot.Prediction, Suffix = "",
+    Min = 0, Max = 3, Default = Config.Aimbot.Prediction, Suffix = "",
     Callback = function(v) Config.Aimbot.Prediction = v end
 })
 
@@ -2127,7 +2010,7 @@ BoneSection:Toggle({
 })
 
 local SilentPage = Window:Page({Name = "Silent Aim", Icon = "138827881557940"})
-local SilentSection = SilentPage:Section({Name = "Silent Aim (No Camera Move)", Side = 1})
+local SilentSection = SilentPage:Section({Name = "Silent Aim (твой, встроен)", Side = 1})
 
 SilentSection:Toggle({
     Name = "Enable Silent Aim",
@@ -2176,6 +2059,13 @@ SilentSection:Slider({
     Callback = function(v) Config.SilentAim.Prediction = v end
 })
 
+SilentSection:Slider({
+    Name = "Hit Chance (%)",
+    Flag = "SilentHitChance",
+    Min = 0, Max = 100, Default = Config.SilentAim.HitChance, Suffix = "",
+    Callback = function(v) Config.SilentAim.HitChance = v end
+})
+
 SilentSection:Toggle({
     Name = "Team Check",
     Flag = "SilentTeamCheck",
@@ -2199,7 +2089,7 @@ SilentSection:Slider({
 
 local VisualsPage = Window:Page({Name = "Visuals", Icon = "138827881557940"})
 
-local WeaponChamsSection = VisualsPage:Section({Name = "Weapon Chams (CS2 Style)", Side = 1})
+local WeaponChamsSection = VisualsPage:Section({Name = "Weapon Chams (CS2 Style, материал+цвет)", Side = 1})
 
 WeaponChamsSection:Toggle({
     Name = "Enable Weapon Chams",
@@ -2238,36 +2128,13 @@ WeaponChamsSection:Toggle({
     Callback = function(v) Config.WeaponChams.GlowEffect = v end
 })
 
-local CrossSection = VisualsPage:Section({Name = "Crosshair", Side = 2})
+local CrossSection = VisualsPage:Section({Name = "Crosshair (только точка)", Side = 2})
 
 CrossSection:Toggle({
-    Name = "Enable Crosshair",
+    Name = "Enable Dot Crosshair",
     Flag = "CrosshairEnabled",
     Default = Config.Crosshair.Enabled,
     Callback = function(v) Config.Crosshair.Enabled = v end
-})
-
-CrossSection:Dropdown({
-    Name = "Crosshair Type",
-    Flag = "CrossType",
-    Default = {Config.Crosshair.Type},
-    Items = {"Swastika", "Dot"},
-    Multi = false,
-    Callback = function(v) Config.Crosshair.Type = v[1] end
-})
-
-CrossSection:Slider({
-    Name = "Arm/Hook Length (Swastika)",
-    Flag = "CrossSize",
-    Min = 10, Max = 80, Default = Config.Crosshair.Size, Suffix = " px",
-    Callback = function(v) Config.Crosshair.Size = v end
-})
-
-CrossSection:Slider({
-    Name = "Hook Length (Swastika)",
-    Flag = "HookLength",
-    Min = 5, Max = 40, Default = Config.Crosshair.HookLength, Suffix = " px",
-    Callback = function(v) Config.Crosshair.HookLength = v end
 })
 
 CrossSection:Slider({
@@ -2275,20 +2142,6 @@ CrossSection:Slider({
     Flag = "DotSize",
     Min = 2, Max = 20, Default = Config.Crosshair.DotSize, Suffix = " px",
     Callback = function(v) Config.Crosshair.DotSize = v end
-})
-
-CrossSection:Slider({
-    Name = "Thickness",
-    Flag = "CrossThick",
-    Min = 1, Max = 8, Default = Config.Crosshair.Thickness, Suffix = "",
-    Callback = function(v) Config.Crosshair.Thickness = v end
-})
-
-CrossSection:Slider({
-    Name = "Rotation Speed (Swastika)",
-    Flag = "RotSpeed",
-    Min = 30, Max = 360, Default = Config.Crosshair.RotationSpeed, Suffix = " deg/s",
-    Callback = function(v) Config.Crosshair.RotationSpeed = v end
 })
 
 CrossSection:Label("Crosshair Color"):Colorpicker({
@@ -2501,13 +2354,6 @@ CombatSection:Slider({
     Callback = function(v) Config.Combat.FireDelay = v end
 })
 
-CombatSection:Toggle({
-    Name = "Auto Shoot",
-    Flag = "AutoShoot",
-    Default = Config.Combat.AutoShoot,
-    Callback = function(v) Config.Combat.AutoShoot = v end
-})
-
 local MiscPage = Window:Page({Name = "Misc", Icon = "138827881557940"})
 local MiscSectionPage = MiscPage:Section({Name = "Utility", Side = 1})
 
@@ -2650,9 +2496,6 @@ MenuColorSection:Label("Static Menu Color"):Colorpicker({
     end
 })
 
--- ╔══════════════════════════════════════════╗
--- ║     [29]  KEYBIND SETUP                 ║
--- ╚══════════════════════════════════════════╝
 Window:Category("Settings")
 local SettingsPage = Library:CreateSettingsPage(Window, KeybindList)
 
@@ -2688,6 +2531,8 @@ Window:Init()
 
 SetupSilentAim()
 
-print("Anyami Project v7.3 loaded - WEAPON CHAMS EDITION")
+print("Anyami Project v8.0 loaded - WEAPON CHAMS ULTIMATE")
 print("Press RightShift to open menu")
-print("Features: CS2 Style Weapon Chams, RGB Colors, Dot Crosshair, Silent Aim + Legacy Aimbot")
+print("Aimbot: без smooth, предикт 0-3")
+print("Silent Aim: встроен твой, нахуй")
+print("Weapon Chams: материал + цвет, перелив")
