@@ -1,13 +1,13 @@
 --[[
-════════════════════════════════════════════════════════════════════
-  A N Y A M I   P R O J E C T   —  ULTIMATE EDITION
-════════════════════════════════════════════════════════════════════
+═══════════════════════════════════════════════════════════════════════════
+  A N Y A M I   P R O J E C T   —  ULTIMATE EDITION v9.0
+═══════════════════════════════════════════════════════════════════════════
   + Weapon Chams (материал + цвет, перелив)
-  + Rainbow всё (меню, чамсы, ESP, прицел)
-  + Silent Aim (встроен нахуй)
-  + Aimbot без smooth, с предиктом 0-3
-  + Dot crosshair отдельно
-════════════════════════════════════════════════════════════════════
+  + FULL RAINBOW (всё переливается без багов)
+  + Silent Aim (с чеками на видимость/стены/тиму)
+  + Aimbot без smooth, предикт 0-3
+  + Dot crosshair
+═══════════════════════════════════════════════════════════════════════════
 ]]
 
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ReiAnyami/AnyamiProjectUI/refs/heads/main/main"))()
@@ -19,32 +19,61 @@ Library.Folders = {
     Assets = CheatName .. "/Assets",
 }
 
--- ╔══════════════════════════════════════════╗
--- ║     RAINBOW CORE                         ║
--- ╚══════════════════════════════════════════╝
-local RainbowState = {
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                    RAINBOW CORE (ПОЛНОСТЬЮ ПЕРЕПИСАН)                 ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
+local RainbowCore = {
     Enabled = false,
     Hue = 0,
     Speed = 0.5,
+    LastUpdate = tick(),
+    
+    -- Кэш цветов чтобы не дёргать HSV каждый кадр если не надо
+    CurrentColor = Color3.fromRGB(255, 80, 80),
+    
+    -- Связанные объекты
+    LinkedObjects = {
+        FOVCircles = {},
+        ESPColors = {},
+        Crosshair = nil,
+        MenuTheme = false,
+        WeaponChams = false,
+        ItemChams = false,
+    }
 }
 
-local function GetRainbowColor()
-    RainbowState.Hue = (RainbowState.Hue + RainbowState.Speed * 0.008) % 1
-    local r, g, b = Color3.fromHSV(RainbowState.Hue, 1, 1):ToRGB()
-    return Color3.fromRGB(r, g, b)
+local function UpdateRainbowColor()
+    local now = tick()
+    local delta = (now - RainbowCore.LastUpdate) * RainbowCore.Speed * 2
+    RainbowCore.LastUpdate = now
+    
+    if RainbowCore.Enabled then
+        RainbowCore.Hue = (RainbowCore.Hue + delta) % 1
+        local r, g, b = Color3.fromHSV(RainbowCore.Hue, 1, 1):ToRGB()
+        RainbowCore.CurrentColor = Color3.fromRGB(r, g, b)
+    end
+    
+    return RainbowCore.CurrentColor
 end
 
--- ╔══════════════════════════════════════════╗
--- ║     THEME SETUP                          ║
--- ╚══════════════════════════════════════════╝
+local function GetRainbowColor()
+    if not RainbowCore.Enabled then 
+        return nil 
+    end
+    return RainbowCore.CurrentColor
+end
+
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                         THEME SETUP                                   ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 local MenuCustomColor = Color3.fromRGB(255, 80, 80)
+
 local function UpdateThemeColors()
-    if RainbowState.Enabled then
-        local rainbow = GetRainbowColor()
-        Library.Theme.Accent = rainbow
-        Library.Theme.AccentGradient = rainbow
-        Library:ChangeTheme("Accent", rainbow)
-        Library:ChangeTheme("AccentGradient", rainbow)
+    if RainbowCore.Enabled then
+        Library.Theme.Accent = RainbowCore.CurrentColor
+        Library.Theme.AccentGradient = RainbowCore.CurrentColor
+        Library:ChangeTheme("Accent", RainbowCore.CurrentColor)
+        Library:ChangeTheme("AccentGradient", RainbowCore.CurrentColor)
     else
         Library.Theme.Accent = MenuCustomColor
         Library.Theme.AccentGradient = MenuCustomColor
@@ -60,7 +89,7 @@ Library:ChangeTheme("AccentGradient", MenuCustomColor)
 
 local Window = Library:Window({
     Name = "Anyami Project",
-    SubName = "v8.0 | Ultimate",
+    SubName = "v9.0 | Full Rainbow",
     Logo = "120959262762131"
 })
 
@@ -69,7 +98,7 @@ local KeybindList = Library:KeybindList("Keybinds")
 -- Watermark
 Library:Watermark({
     "Anyami Project",
-    "v8.0",
+    "v9.0",
     120959262762131
 })
 
@@ -78,7 +107,7 @@ task.spawn(function()
         local FPS = math.floor(1 / game:GetService("RunService").RenderStepped:Wait())
         Library:Watermark({
             "Anyami Project",
-            "v8.0",
+            "v9.0",
             120959262762131,
             "FPS: " .. FPS
         })
@@ -86,9 +115,9 @@ task.spawn(function()
     end
 end)
 
--- ╔══════════════════════════════════════════╗
--- ║        SERVICES                          ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                           SERVICES                                    ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -104,9 +133,9 @@ end
 
 local SetFullbright
 
--- ╔══════════════════════════════════════════╗
--- ║        CONFIGURATION                     ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                           CONFIGURATION                               ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 local Config = {
     Rainbow = {
         Enabled = false,
@@ -139,6 +168,7 @@ local Config = {
         SnapLine   = false,
         FOVOrigin  = "Mouse",
         MaxDistance = 500,
+        UseRainbowFOV = false,
     },
     SilentAim = {
         Enabled      = false,
@@ -149,9 +179,11 @@ local Config = {
         Bone         = "Head",
         Prediction   = 0.165,
         TeamCheck    = false,
-        WallCheck    = false,
+        WallCheck    = true,
+        VisibleCheck = true,
         MaxDistance  = 2000,
         HitChance    = 100,
+        UseRainbowFOV = false,
     },
     Trigger = {
         Enabled      = false,
@@ -180,7 +212,7 @@ local Config = {
         ColorVisible       = Color3.fromRGB(0, 255, 120),
         ColorHidden        = Color3.fromRGB(255, 40, 40),
         MaxDistance        = 1000,
-        RainbowESP         = false,
+        UseRainbowESP      = false,
         DisablePlayerChams = false,
     },
     WeaponChams = {
@@ -188,24 +220,18 @@ local Config = {
         Material     = "Neon",
         Color        = Color3.fromRGB(0, 255, 255),
         Transparency = 0.3,
-        Rainbow      = false,
+        UseRainbow   = false,
         GlowEffect   = true,
     },
     Crosshair = {
         Enabled    = false,
-        Type       = "Dot",
-        Size       = 40,
-        Thickness  = 4,
-        HookLength = 20,
         Color      = Color3.fromRGB(255, 0, 0),
-        Rainbow    = false,
+        UseRainbow = false,
         DotSize    = 4,
     },
     Combat = {
         RapidFire    = false,
         FireDelay    = 0.05,
-        AutoShoot    = false,
-        NoRecoil     = false,
     },
     Misc = {
         AntiAFK        = true,
@@ -222,16 +248,16 @@ local Config = {
         Material    = "Neon",
         Color       = Color3.fromRGB(255, 0, 255),
         Transparency = 0.3,
-        Rainbow     = false,
+        UseRainbow  = false,
     },
     UI = {
         OpenKey = Enum.KeyCode.RightShift,
     },
 }
 
--- ╔══════════════════════════════════════════╗
--- ║        STATE                             ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                             STATE                                     ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 local State = {
     Aiming            = false,
     AimTarget         = nil,
@@ -247,7 +273,6 @@ local State = {
 local Connections = {}
 local OriginalSizes = {}
 local ESPCache = {}
-local OldHook = nil
 local OriginalLight = {}
 local LastShotTime = 0
 local AutoClickerConnection = nil
@@ -259,9 +284,9 @@ local function TrackConnection(conn)
     return conn
 end
 
--- ╔══════════════════════════════════════════╗
--- ║        INPUT HELPERS                     ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                          INPUT HELPERS                                ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 local InputManager = {}
 function InputManager.Press()
     if mouse1press then
@@ -311,9 +336,9 @@ local function BindName(bind)
     return bind.Name
 end
 
--- ╔══════════════════════════════════════════╗
--- ║        UTILITY                           ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                            UTILITY                                    ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 local RayParams = RaycastParams.new()
 RayParams.FilterType = Enum.RaycastFilterType.Exclude
 RayParams.IgnoreWater = true
@@ -345,28 +370,20 @@ local function IsEnemyFor(plr, module)
     return plr.Team ~= LocalPlayer.Team
 end
 
-local function CheckVisibility(character, forceCheck)
-    if not forceCheck and not Config.Visuals.WallCheck then return true end
+local function CheckVisibility(character, part)
     local lc = LocalPlayer.Character
     if not lc then return true end
     local origin = Camera.CFrame.Position
-    local head = character:FindFirstChild("Head")
-    if not head then return false end
-    local dir = head.Position - origin
-    local ignore = {lc, Camera}
-    for _ = 1, 5 do
-        RayParams.FilterDescendantsInstances = ignore
-        local res = Workspace:Raycast(origin, dir, RayParams)
-        if not res then return true end
-        if res.Instance:IsDescendantOf(character) then return true end
-        if res.Instance.Transparency >= Config.Visuals.IgnoreTransparency
-           or not res.Instance.CanCollide then
-            table.insert(ignore, res.Instance)
-        else
-            return false
-        end
-    end
-    return false
+    local targetPart = part or (character and character:FindFirstChild("Head"))
+    if not targetPart then return false end
+    
+    local params = RaycastParams.new()
+    params.FilterType = Enum.RaycastFilterType.Blacklist
+    params.FilterDescendantsInstances = {lc, character, Camera}
+    
+    local result = Workspace:Raycast(origin, (targetPart.Position - origin), params)
+    if not result then return true end
+    return result.Instance:IsDescendantOf(character)
 end
 
 local function IsInRange(plr, maxDist)
@@ -415,15 +432,9 @@ local function GetBoneConnections(char)
     return char:FindFirstChild("UpperTorso") and R15Bones or R6Bones
 end
 
-local function CalculateChance(percentage)
-    percentage = math.floor(percentage)
-    local chance = math.random() / 100
-    return chance <= percentage / 100
-end
-
--- ╔══════════════════════════════════════════╗
--- ║        DRAWING OBJECTS                   ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                          DRAWING OBJECTS                              ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 local FOVCircle = Drawing.new("Circle")
 FOVCircle.Thickness = 1
 FOVCircle.NumSides = 64
@@ -501,9 +512,9 @@ SnapLineObj.Thickness = 1
 SnapLineObj.Visible = false
 SnapLineObj.Color = Color3.fromRGB(255, 255, 0)
 
--- ╔══════════════════════════════════════════╗
--- ║        ESP DRAWING CACHE                 ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                           ESP CACHE                                   ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 local MAX_SKELETON = 14
 
 local function CreateESPObjects()
@@ -577,9 +588,9 @@ local function RemoveESP(plr)
     ESPCache[plr] = nil
 end
 
--- ╔══════════════════════════════════════════╗
--- ║        WEAPON CHAMS (РАБОЧИЕ)           ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                          WEAPON CHAMS                                 ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 local MaterialMap = {
     Neon = Enum.Material.Neon,
     Plastic = Enum.Material.Plastic,
@@ -618,7 +629,7 @@ local function ApplyWeaponChams()
         return
     end
     
-    local chamsColor = Config.WeaponChams.Rainbow and GetRainbowColor() or Config.WeaponChams.Color
+    local chamsColor = (Config.WeaponChams.UseRainbow and RainbowCore.Enabled) and RainbowCore.CurrentColor or Config.WeaponChams.Color
     local targetMaterial = MaterialMap[Config.WeaponChams.Material] or Enum.Material.Neon
     
     local tools = {}
@@ -697,9 +708,9 @@ local function ApplyWeaponChams()
     end
 end
 
--- ╔══════════════════════════════════════════╗
--- ║        ITEM CHAMS                        ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                            ITEM CHAMS                                 ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 local function ApplyItemChams()
     if not Config.ItemChams.Enabled then
         for part, original in pairs(ItemChamsCache) do
@@ -714,7 +725,7 @@ local function ApplyItemChams()
     local char = LocalPlayer.Character
     if not char then return end
     
-    local chamsColor = Config.ItemChams.Rainbow and GetRainbowColor() or Config.ItemChams.Color
+    local chamsColor = (Config.ItemChams.UseRainbow and RainbowCore.Enabled) and RainbowCore.CurrentColor or Config.ItemChams.Color
 
     for _, tool in ipairs(char:GetChildren()) do
         if tool:IsA("Tool") then
@@ -734,9 +745,9 @@ local function ApplyItemChams()
     end
 end
 
--- ╔══════════════════════════════════════════╗
--- ║        HITBOX EXPANDER                   ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                           HITBOX EXPANDER                             ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 local function GetBodyParts(char)
     local parts = {}
     for _, part in ipairs(char:GetChildren()) do
@@ -783,9 +794,9 @@ local function UpdateHitboxes()
     end
 end
 
--- ╔══════════════════════════════════════════╗
--- ║        RAPID FIRE                        ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                             RAPID FIRE                                ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 local function SafeClick()
     pcall(function()
         local VirtualUser = game:GetService("VirtualUser")
@@ -833,9 +844,9 @@ local function ResetRapidFire()
     StopAutoClicker()
 end
 
--- ╔══════════════════════════════════════════╗
--- ║        AIMBOT (БЕЗ SMOOTH)              ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                         AIMBOT (БЕЗ SMOOTH)                           ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 local function AimAt(bone, character)
     if not bone then return end
     local targetPos = bone.Position
@@ -852,7 +863,7 @@ local function AimAt(bone, character)
     end
     
     local targetCF = CFrame.new(Camera.CFrame.Position, targetPos)
-    Camera.CFrame = targetCF  -- без smooth, нахуй
+    Camera.CFrame = targetCF
 end
 
 local function UpdateAimbot()
@@ -884,7 +895,7 @@ local function UpdateAimbot()
                 if vis then
                     local dist = (Vector2.new(pos.X, pos.Y) - mousePos).Magnitude
                     if dist <= Config.Aimbot.FOV * 1.5 then
-                        if not Config.Aimbot.WallCheck or CheckVisibility(t.Character, true) then
+                        if not Config.Aimbot.WallCheck or CheckVisibility(t.Character, bone) then
                             State.CurrentTarget = t
                             AimAt(bone, t.Character)
                             if Config.Aimbot.AutoFire and not State.AutoFiring then
@@ -903,7 +914,7 @@ local function UpdateAimbot()
     local closest, minDist = nil, Config.Aimbot.FOV
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr ~= LocalPlayer and IsAlive(plr) and IsEnemyFor(plr, "Aimbot") and IsInRange(plr, Config.Aimbot.MaxDistance) then
-            if not Config.Aimbot.WallCheck or CheckVisibility(plr.Character, true) then
+            if not Config.Aimbot.WallCheck or CheckVisibility(plr.Character, GetBone(plr.Character, Config.Aimbot.Bone)) then
                 local bone = GetBone(plr.Character, Config.Aimbot.Bone)
                 if bone then
                     local pos, vis = Camera:WorldToViewportPoint(bone.Position)
@@ -936,53 +947,57 @@ local function UpdateAimbot()
     end
 end
 
--- ╔══════════════════════════════════════════╗
--- ║        SILENT AIM (ВСТРОЕН)             ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                      SILENT AIM (ПОЛНОСТЬЮ РАБОЧИЙ)                   ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 local SilentAimConnection = nil
 
-local function GetSilentTargetPosition()
-    if not Config.SilentAim.Enabled then return nil end
+local function GetSilentTarget()
+    if not Config.SilentAim.Enabled then return nil, nil end
     
     local mousePos = UserInputService:GetMouseLocation()
-    local closest, minDist = nil, Config.SilentAim.FOV
+    local closest, minDist, closestPart = nil, Config.SilentAim.FOV, nil
     
     for _, plr in ipairs(Players:GetPlayers()) do
-        if plr ~= LocalPlayer and IsAlive(plr) and IsEnemyFor(plr, "SilentAim") and IsInRange(plr, Config.SilentAim.MaxDistance) then
-            if not Config.SilentAim.WallCheck or CheckVisibility(plr.Character, true) then
-                local bone = GetBone(plr.Character, Config.SilentAim.Bone)
-                if bone then
-                    local pos, vis = Camera:WorldToViewportPoint(bone.Position)
-                    if vis then
-                        local dist = (Vector2.new(pos.X, pos.Y) - mousePos).Magnitude
-                        if dist < minDist then
-                            minDist = dist
-                            closest = plr
-                        end
-                    end
-                end
-            end
+        if plr == LocalPlayer then continue end
+        if not IsAlive(plr) then continue end
+        if not IsEnemyFor(plr, "SilentAim") then continue end
+        if not IsInRange(plr, Config.SilentAim.MaxDistance) then continue end
+        
+        local bone = GetBone(plr.Character, Config.SilentAim.Bone)
+        if not bone then continue end
+        
+        -- VisibleCheck + WallCheck
+        if Config.SilentAim.VisibleCheck or Config.SilentAim.WallCheck then
+            if not CheckVisibility(plr.Character, bone) then continue end
+        end
+        
+        local pos, vis = Camera:WorldToViewportPoint(bone.Position)
+        if not vis then continue end
+        
+        local dist = (Vector2.new(pos.X, pos.Y) - mousePos).Magnitude
+        if dist < minDist then
+            minDist = dist
+            closest = plr
+            closestPart = bone
         end
     end
     
-    if closest then
-        local bone = GetBone(closest.Character, Config.SilentAim.Bone)
-        if bone then
-            local targetPos = bone.Position
-            if Config.SilentAim.Prediction > 0 then
-                local root = closest.Character:FindFirstChild("HumanoidRootPart")
-                if root then
-                    local velocity = root.AssemblyLinearVelocity
-                    local distance = (targetPos - Camera.CFrame.Position).Magnitude
-                    local bulletSpeed = 3000
-                    local travelTime = distance / bulletSpeed
-                    targetPos = targetPos + (velocity * travelTime * Config.SilentAim.Prediction)
-                end
+    if closest and closestPart then
+        local targetPos = closestPart.Position
+        if Config.SilentAim.Prediction > 0 then
+            local root = closest.Character:FindFirstChild("HumanoidRootPart")
+            if root then
+                local velocity = root.AssemblyLinearVelocity
+                local distance = (targetPos - Camera.CFrame.Position).Magnitude
+                local bulletSpeed = 3000
+                local travelTime = distance / bulletSpeed
+                targetPos = targetPos + (velocity * travelTime * Config.SilentAim.Prediction)
             end
-            return targetPos
         end
+        return closest, targetPos
     end
-    return nil
+    return nil, nil
 end
 
 local function SetupSilentAim()
@@ -998,10 +1013,10 @@ local function SetupSilentAim()
         if not IsBindActive(Config.SilentAim.Bind) then return end
         
         local chance = Config.SilentAim.HitChance
-        if chance < 100 and math.random() > chance / 100 then return end
+        if chance < 100 and math.random() * 100 > chance then return end
         
-        local targetPos = GetSilentTargetPosition()
-        if targetPos then
+        local target, targetPos = GetSilentTarget()
+        if target and targetPos then
             local screenPoint = Camera:WorldToViewportPoint(targetPos)
             if screenPoint.Z > 0 then
                 mousemoveabs(screenPoint.X, screenPoint.Y)
@@ -1010,9 +1025,9 @@ local function SetupSilentAim()
     end)
 end
 
--- ╔══════════════════════════════════════════╗
--- ║        TRIGGERBOT                        ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                            TRIGGERBOT                                 ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 local function UpdateTrigger()
     MagnetCircle.Visible = Config.Trigger.Enabled
     MagnetCircle.Position = UserInputService:GetMouseLocation()
@@ -1053,7 +1068,7 @@ local function UpdateTrigger()
                 if onScreen then
                     local dist = (Vector2.new(pos.X, pos.Y) - mousePos).Magnitude
                     if dist <= Config.Trigger.MagnetRadius then
-                        if CheckVisibility(plr.Character, true) then
+                        if CheckVisibility(plr.Character, head) then
                             State.LastTargetT = tick()
                             break
                         end
@@ -1084,9 +1099,9 @@ local function UpdateTrigger()
     end
 end
 
--- ╔══════════════════════════════════════════╗
--- ║        HIGHLIGHT ESP                     ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                           HIGHLIGHT ESP                               ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 local function UpdateHighlightESP()
     if Config.Visuals.DisablePlayerChams then
         for _, p in pairs(Players:GetPlayers()) do
@@ -1110,8 +1125,8 @@ local function UpdateHighlightESP()
         return
     end
     
-    local espColorVisible = Config.Visuals.RainbowESP and GetRainbowColor() or Config.Visuals.ColorVisible
-    local espColorHidden = Config.Visuals.RainbowESP and GetRainbowColor() or Config.Visuals.ColorHidden
+    local espColorVisible = (Config.Visuals.UseRainbowESP and RainbowCore.Enabled) and RainbowCore.CurrentColor or Config.Visuals.ColorVisible
+    local espColorHidden = (Config.Visuals.UseRainbowESP and RainbowCore.Enabled) and RainbowCore.CurrentColor or Config.Visuals.ColorHidden
     
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr ~= LocalPlayer and plr.Character then
@@ -1127,7 +1142,7 @@ local function UpdateHighlightESP()
                 hl.Enabled = true
                 hl.OutlineTransparency = 1
                 hl.FillTransparency = Config.Visuals.HighlightTransp
-                hl.FillColor = CheckVisibility(plr.Character) and espColorVisible or espColorHidden
+                hl.FillColor = CheckVisibility(plr.Character, plr.Character:FindFirstChild("Head")) and espColorVisible or espColorHidden
             else
                 pcall(function()
                     if plr.Character and plr.Character:FindFirstChild("AnyamiHL") then
@@ -1139,13 +1154,13 @@ local function UpdateHighlightESP()
     end
 end
 
--- ╔══════════════════════════════════════════╗
--- ║        DRAWING ESP                       ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                            DRAWING ESP                                ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 local function UpdateDrawingESP()
     local viewport = Camera.ViewportSize
-    local espColorVisible = Config.Visuals.RainbowESP and GetRainbowColor() or Config.Visuals.ColorVisible
-    local espColorHidden = Config.Visuals.RainbowESP and GetRainbowColor() or Config.Visuals.ColorHidden
+    local espColorVisible = (Config.Visuals.UseRainbowESP and RainbowCore.Enabled) and RainbowCore.CurrentColor or Config.Visuals.ColorVisible
+    local espColorHidden = (Config.Visuals.UseRainbowESP and RainbowCore.Enabled) and RainbowCore.CurrentColor or Config.Visuals.ColorHidden
     
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr ~= LocalPlayer then
@@ -1166,7 +1181,7 @@ local function UpdateDrawingESP()
                     if not rootVis then
                         HideESPObjects(o)
                     else
-                        local vis = CheckVisibility(char)
+                        local vis = CheckVisibility(char, head)
                         local col = vis and espColorVisible or espColorHidden
 
                         local headTop = head.Position + Vector3.new(0, head.Size.Y * 0.5 + 0.5, 0)
@@ -1289,9 +1304,9 @@ local function UpdateDrawingESP()
     end
 end
 
--- ╔══════════════════════════════════════════╗
--- ║        CROSSHAIR (ТОЛЬКО DOT)           ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                            CROSSHAIR                                  ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 local function UpdateCrosshair()
     if not Config.Crosshair.Enabled then
         DotCrosshair.Visible = false
@@ -1301,33 +1316,34 @@ local function UpdateCrosshair()
     local center = Camera.ViewportSize / 2
     DotCrosshair.Position = Vector2.new(center.X, center.Y)
     DotCrosshair.Radius = Config.Crosshair.DotSize
-    DotCrosshair.Color = Config.Crosshair.Rainbow and GetRainbowColor() or Config.Crosshair.Color
+    DotCrosshair.Color = (Config.Crosshair.UseRainbow and RainbowCore.Enabled) and RainbowCore.CurrentColor or Config.Crosshair.Color
     DotCrosshair.Visible = true
 end
 
--- ╔══════════════════════════════════════════╗
--- ║        WATERMARK                         ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                            WATERMARK                                  ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 local function UpdateWatermark()
     WatermarkText.Visible = Config.Misc.Watermark
     if not Config.Misc.Watermark then return end
     
     local viewport = Camera.ViewportSize
-    local text = "Anyami Project v8.0"
+    local text = "Anyami Project v9.0"
     if Config.Aimbot.Enabled then text = text .. " | Aimbot ON" end
     if Config.SilentAim.Enabled then text = text .. " | Silent ON" end
     if Config.Trigger.Enabled then text = text .. " | Trigger ON" end
     if Config.Visuals.Enabled then text = text .. " | ESP ON" end
     if Config.WeaponChams.Enabled then text = text .. " | WChams ON" end
+    if RainbowCore.Enabled then text = text .. " | RAINBOW" end
     
     WatermarkText.Text = text
     WatermarkText.Position = Vector2.new(viewport.X - WatermarkText.TextBounds.X - 10, 10)
     WatermarkText.Color = Color3.fromRGB(200, 200, 255)
 end
 
--- ╔══════════════════════════════════════════╗
--- ║        TARGET INFO                       ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                            TARGET INFO                                ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 local function UpdateTargetInfo()
     local target = State.CurrentTarget or State.AimTarget
     if not Config.Aimbot.TargetInfo or not target or not IsAlive(target) or not State.Aiming then
@@ -1385,9 +1401,9 @@ local function UpdateTargetInfo()
     TgtInfo.BarFill.Visible = true
 end
 
--- ╔══════════════════════════════════════════╗
--- ║        KEYBIND OVERLAY                   ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                           KEYBIND OVERLAY                             ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 local function UpdateKeybindOverlay()
     if not Config.Misc.KeybindOverlay then
         for i = 1, 15 do
@@ -1445,14 +1461,18 @@ local function UpdateKeybindOverlay()
         addLine(string.format("Crosshair: [ON]", Color3.fromRGB(100, 200, 255)))
     end
     
+    if RainbowCore.Enabled then
+        addLine(string.format("RAINBOW MODE", Color3.fromRGB(255, 100, 255)))
+    end
+    
     for i = lineNum, 15 do
         if OverlayLines[i] then OverlayLines[i].Visible = false end
     end
 end
 
--- ╔══════════════════════════════════════════╗
--- ║        FULLBRIGHT                        ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                            FULLBRIGHT                                 ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 SetFullbright = function(enabled)
     if enabled then
         OriginalLight.Ambient = Lighting.Ambient
@@ -1501,9 +1521,9 @@ end
 
 if Config.Misc.Fullbright then SetFullbright(true) end
 
--- ╔══════════════════════════════════════════╗
--- ║        ANTI-AFK                          ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                             ANTI-AFK                                   ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 TrackConnection(LocalPlayer.Idled:Connect(function()
     if Config.Misc.AntiAFK then
         pcall(function()
@@ -1514,9 +1534,9 @@ TrackConnection(LocalPlayer.Idled:Connect(function()
     end
 end))
 
--- ╔══════════════════════════════════════════╗
--- ║        CHARACTER HANDLING                ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                         CHARACTER HANDLING                            ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 local function OnCharacterAdded(plr, char)
     if plr == LocalPlayer then return end
     task.delay(1, function()
@@ -1588,24 +1608,25 @@ LocalPlayer.CharacterAdded:Connect(function()
     WeaponChamsCache = {}
 end)
 
--- ╔══════════════════════════════════════════╗
--- ║        MAIN LOOP                         ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                             MAIN LOOP                                  ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 TrackConnection(RunService.RenderStepped:Connect(function(deltaTime)
     if not State.Running then return end
     Camera = Workspace.CurrentCamera
-
-    if Config.Rainbow.Enabled or Config.Visuals.RainbowESP or Config.Crosshair.Rainbow or Config.ItemChams.Rainbow or Config.WeaponChams.Rainbow or Config.MenuColor.UseRainbow then
-        RainbowState.Speed = Config.Rainbow.Speed
-        RainbowState.Enabled = Config.Rainbow.Enabled or Config.Visuals.RainbowESP or Config.Crosshair.Rainbow or Config.ItemChams.Rainbow or Config.WeaponChams.Rainbow or Config.MenuColor.UseRainbow
-        GetRainbowColor()
+    
+    -- Обновляем радугу
+    if Config.Rainbow.Enabled or Config.Visuals.UseRainbowESP or Config.Crosshair.UseRainbow or Config.ItemChams.UseRainbow or Config.WeaponChams.UseRainbow or Config.MenuColor.UseRainbow or Config.Aimbot.UseRainbowFOV or Config.SilentAim.UseRainbowFOV then
+        RainbowCore.Enabled = true
+        RainbowCore.Speed = Config.Rainbow.Speed
+        UpdateRainbowColor()
         
+        -- Меню
         if Config.MenuColor.UseRainbow then
-            local rainbow = GetRainbowColor()
-            Library.Theme.Accent = rainbow
-            Library.Theme.AccentGradient = rainbow
-            Library:ChangeTheme("Accent", rainbow)
-            Library:ChangeTheme("AccentGradient", rainbow)
+            Library.Theme.Accent = RainbowCore.CurrentColor
+            Library.Theme.AccentGradient = RainbowCore.CurrentColor
+            Library:ChangeTheme("Accent", RainbowCore.CurrentColor)
+            Library:ChangeTheme("AccentGradient", RainbowCore.CurrentColor)
         else
             Library.Theme.Accent = MenuCustomColor
             Library.Theme.AccentGradient = MenuCustomColor
@@ -1613,9 +1634,24 @@ TrackConnection(RunService.RenderStepped:Connect(function(deltaTime)
             Library:ChangeTheme("AccentGradient", MenuCustomColor)
         end
         
-        if Config.Rainbow.Enabled then
-            FOVCircle.Color = GetRainbowColor()
-            SilentFOVCircle.Color = GetRainbowColor()
+        -- FOV круги
+        if Config.Aimbot.UseRainbowFOV then
+            FOVCircle.Color = RainbowCore.CurrentColor
+        end
+        if Config.SilentAim.UseRainbowFOV then
+            SilentFOVCircle.Color = RainbowCore.CurrentColor
+        end
+    else
+        RainbowCore.Enabled = false
+        if not Config.MenuColor.UseRainbow then
+            Library.Theme.Accent = MenuCustomColor
+            Library.Theme.AccentGradient = MenuCustomColor
+        end
+        if not Config.Aimbot.UseRainbowFOV then
+            FOVCircle.Color = Config.Aimbot.FOVColor
+        end
+        if not Config.SilentAim.UseRainbowFOV then
+            SilentFOVCircle.Color = Config.SilentAim.FOVColor
         end
     end
 
@@ -1633,14 +1669,6 @@ TrackConnection(RunService.RenderStepped:Connect(function(deltaTime)
     SilentFOVCircle.Position = mp
     SilentFOVCircle.Radius = Config.SilentAim.FOV
     SilentFOVCircle.Visible = Config.SilentAim.Enabled and Config.SilentAim.ShowFOV
-    
-    if State.AimTarget and IsAlive(State.AimTarget) then
-        if not Config.Rainbow.Enabled then
-            FOVCircle.Color = Color3.fromRGB(100, 255, 100)
-        end
-    elseif not Config.Rainbow.Enabled then
-        FOVCircle.Color = Config.Aimbot.FOVColor
-    end
 
     pcall(UpdateAimbot)
     pcall(UpdateHitboxes)
@@ -1661,7 +1689,7 @@ TrackConnection(RunService.RenderStepped:Connect(function(deltaTime)
                 local center = Camera.ViewportSize / 2
                 SnapLineObj.From = Vector2.new(center.X, center.Y)
                 SnapLineObj.To = Vector2.new(pos.X, pos.Y)
-                local isVis = CheckVisibility(State.CurrentTarget.Character, true)
+                local isVis = CheckVisibility(State.CurrentTarget.Character, bone)
                 SnapLineObj.Color = isVis and Color3.fromRGB(0, 255, 100) or Color3.fromRGB(255, 50, 50)
                 SnapLineObj.Visible = true
             else
@@ -1701,9 +1729,9 @@ task.spawn(function()
     end
 end)
 
--- ╔══════════════════════════════════════════╗
--- ║        INFINITE JUMP                     ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                            INFINITE JUMP                              ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 TrackConnection(UserInputService.InputBegan:Connect(function(input)
     if Config.Misc.InfiniteJump and input.KeyCode == Enum.KeyCode.Space then
         local char = LocalPlayer.Character
@@ -1714,9 +1742,9 @@ TrackConnection(UserInputService.InputBegan:Connect(function(input)
     end
 end))
 
--- ╔══════════════════════════════════════════╗
--- ║        INPUT HANDLING                    ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                            INPUT HANDLING                             ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 TrackConnection(UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
 
@@ -1765,9 +1793,9 @@ TrackConnection(UserInputService.InputEnded:Connect(function(input)
     end
 end))
 
--- ╔══════════════════════════════════════════╗
--- ║        CLEANUP                           ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                              CLEANUP                                   ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 getgenv().AnyamiCleanup = function()
     State.Running = false
 
@@ -1852,29 +1880,29 @@ getgenv().AnyamiCleanup = function()
         end
     end
 
-    if OldHook then
-        pcall(function() hookmetamethod(game, "__namecall", OldHook) end)
-        OldHook = nil
-    end
-
     ResetRapidFire()
 
     getgenv().AnyamiCleanup = nil
 end
 
--- ╔══════════════════════════════════════════╗
--- ║        UI MENU                           ║
--- ╚══════════════════════════════════════════╝
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                               UI MENU                                  ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 Window:Category("Main")
 
 local RainbowPage = Window:Page({Name = "Rainbow", Icon = "138827881557940"})
-local RainbowSection = RainbowPage:Section({Name = "RGB Glow Settings", Side = 1})
+local RainbowSection = RainbowPage:Section({Name = "FULL RAINBOW SETTINGS", Side = 1})
 
 RainbowSection:Toggle({
-    Name = "Global Rainbow (FOV, etc)",
-    Flag = "RainbowEnabled",
+    Name = "MASTER RAINBOW SWITCH",
+    Flag = "RainbowMaster",
     Default = Config.Rainbow.Enabled,
-    Callback = function(v) Config.Rainbow.Enabled = v end
+    Callback = function(v) 
+        Config.Rainbow.Enabled = v
+        if not v then
+            RainbowCore.Enabled = false
+        end
+    end
 })
 
 RainbowSection:Slider({
@@ -1884,36 +1912,59 @@ RainbowSection:Slider({
     Callback = function(v) Config.Rainbow.Speed = v end
 })
 
+RainbowSection:Divider()
+
+RainbowSection:Toggle({
+    Name = "Rainbow Menu Color",
+    Flag = "RainbowMenu",
+    Default = Config.MenuColor.UseRainbow,
+    Callback = function(v) Config.MenuColor.UseRainbow = v end
+})
+
 RainbowSection:Toggle({
     Name = "Rainbow ESP",
     Flag = "RainbowESP",
-    Default = Config.Visuals.RainbowESP,
-    Callback = function(v) Config.Visuals.RainbowESP = v end
+    Default = Config.Visuals.UseRainbowESP,
+    Callback = function(v) Config.Visuals.UseRainbowESP = v end
 })
 
 RainbowSection:Toggle({
     Name = "Rainbow Crosshair",
     Flag = "RainbowCrosshair",
-    Default = Config.Crosshair.Rainbow,
-    Callback = function(v) Config.Crosshair.Rainbow = v end
+    Default = Config.Crosshair.UseRainbow,
+    Callback = function(v) Config.Crosshair.UseRainbow = v end
 })
 
 RainbowSection:Toggle({
     Name = "Rainbow Weapon Chams",
     Flag = "RainbowWeaponChams",
-    Default = Config.WeaponChams.Rainbow,
-    Callback = function(v) Config.WeaponChams.Rainbow = v end
+    Default = Config.WeaponChams.UseRainbow,
+    Callback = function(v) Config.WeaponChams.UseRainbow = v end
 })
 
 RainbowSection:Toggle({
     Name = "Rainbow Item Chams",
-    Flag = "RainbowChams",
-    Default = Config.ItemChams.Rainbow,
-    Callback = function(v) Config.ItemChams.Rainbow = v end
+    Flag = "RainbowItemChams",
+    Default = Config.ItemChams.UseRainbow,
+    Callback = function(v) Config.ItemChams.UseRainbow = v end
+})
+
+RainbowSection:Toggle({
+    Name = "Rainbow Aimbot FOV",
+    Flag = "RainbowAimbotFOV",
+    Default = Config.Aimbot.UseRainbowFOV,
+    Callback = function(v) Config.Aimbot.UseRainbowFOV = v end
+})
+
+RainbowSection:Toggle({
+    Name = "Rainbow Silent Aim FOV",
+    Flag = "RainbowSilentFOV",
+    Default = Config.SilentAim.UseRainbowFOV,
+    Callback = function(v) Config.SilentAim.UseRainbowFOV = v end
 })
 
 local AimbotPage = Window:Page({Name = "Aimbot", Icon = "138827881557940"})
-local AimSection = AimbotPage:Section({Name = "Legacy Aimbot (без смута, нахуй)", Side = 1})
+local AimSection = AimbotPage:Section({Name = "Legacy Aimbot (без смута)", Side = 1})
 
 AimSection:Toggle({
     Name = "Enable Aimbot",
@@ -2010,7 +2061,7 @@ BoneSection:Toggle({
 })
 
 local SilentPage = Window:Page({Name = "Silent Aim", Icon = "138827881557940"})
-local SilentSection = SilentPage:Section({Name = "Silent Aim (твой, встроен)", Side = 1})
+local SilentSection = SilentPage:Section({Name = "Silent Aim (с чеками на всё)", Side = 1})
 
 SilentSection:Toggle({
     Name = "Enable Silent Aim",
@@ -2074,6 +2125,13 @@ SilentSection:Toggle({
 })
 
 SilentSection:Toggle({
+    Name = "Visible Check",
+    Flag = "SilentVisibleCheck",
+    Default = Config.SilentAim.VisibleCheck,
+    Callback = function(v) Config.SilentAim.VisibleCheck = v end
+})
+
+SilentSection:Toggle({
     Name = "Wall Check",
     Flag = "SilentWallCheck",
     Default = Config.SilentAim.WallCheck,
@@ -2089,7 +2147,7 @@ SilentSection:Slider({
 
 local VisualsPage = Window:Page({Name = "Visuals", Icon = "138827881557940"})
 
-local WeaponChamsSection = VisualsPage:Section({Name = "Weapon Chams (CS2 Style, материал+цвет)", Side = 1})
+local WeaponChamsSection = VisualsPage:Section({Name = "Weapon Chams (CS2 Style)", Side = 1})
 
 WeaponChamsSection:Toggle({
     Name = "Enable Weapon Chams",
@@ -2128,7 +2186,7 @@ WeaponChamsSection:Toggle({
     Callback = function(v) Config.WeaponChams.GlowEffect = v end
 })
 
-local CrossSection = VisualsPage:Section({Name = "Crosshair (только точка)", Side = 2})
+local CrossSection = VisualsPage:Section({Name = "Crosshair", Side = 2})
 
 CrossSection:Toggle({
     Name = "Enable Dot Crosshair",
@@ -2466,21 +2524,6 @@ TriggerSection:Toggle({
 local MenuPage = Window:Page({Name = "Menu", Icon = "138827881557940"})
 local MenuColorSection = MenuPage:Section({Name = "Menu Color", Side = 1})
 
-MenuColorSection:Toggle({
-    Name = "Use Rainbow Menu Color",
-    Flag = "RainbowMenuColor",
-    Default = Config.MenuColor.UseRainbow,
-    Callback = function(v) 
-        Config.MenuColor.UseRainbow = v
-        if not v then
-            Library.Theme.Accent = MenuCustomColor
-            Library.Theme.AccentGradient = MenuCustomColor
-            Library:ChangeTheme("Accent", MenuCustomColor)
-            Library:ChangeTheme("AccentGradient", MenuCustomColor)
-        end
-    end
-})
-
 MenuColorSection:Label("Static Menu Color"):Colorpicker({
     Name = "Static Menu Color",
     Flag = "StaticMenuColor",
@@ -2531,8 +2574,12 @@ Window:Init()
 
 SetupSilentAim()
 
-print("Anyami Project v8.0 loaded - WEAPON CHAMS ULTIMATE")
-print("Press RightShift to open menu")
-print("Aimbot: без smooth, предикт 0-3")
-print("Silent Aim: встроен твой, нахуй")
-print("Weapon Chams: материал + цвет, перелив")
+print("═══════════════════════════════════════════════════════════════════════")
+print("  Anyami Project v9.0 - FULL RAINBOW EDITION loaded!")
+print("═══════════════════════════════════════════════════════════════════════")
+print("  Press RightShift to open menu")
+print("  Aimbot: без smooth, предикт 0-3")
+print("  Silent Aim: с чеками на видимость/стены/тиму")
+print("  Weapon Chams: материал + цвет + свечение")
+print("  Rainbow: FULL RGB для всего (вкл/выкл мастер-свитчем)")
+print("═══════════════════════════════════════════════════════════════════════")
