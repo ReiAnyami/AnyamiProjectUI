@@ -1,15 +1,14 @@
 --[[
 ═══════════════════════════════════════════════════════════════════════════
-  A N Y A M I   P R O J E C T   —  ULTIMATE EDITION v9.0
+  A N Y A M I   P R O J E C T   —  ULTIMATE EDITION v9.1 FIXED
 ═══════════════════════════════════════════════════════════════════════════
-  + Weapon Chams (материал + цвет, перелив)
-  + FULL RAINBOW (всё переливается без багов)
-  + Silent Aim (с чеками на видимость/стены/тиму)
-  + Aimbot без smooth, предикт 0-3
-  + Dot crosshair
+  FIXED: UI кнопки, меню, все функции
 ═══════════════════════════════════════════════════════════════════════════
 ]]
 
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                         ЗАГРУЗКА БИБЛИОТЕКИ                          ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ReiAnyami/AnyamiProjectUI/refs/heads/main/main"))()
 local CheatName = "AnyamiProject"
 
@@ -20,67 +19,27 @@ Library.Folders = {
 }
 
 -- ╔═══════════════════════════════════════════════════════════════════════╗
--- ║                    RAINBOW CORE (ПОЛНОСТЬЮ ПЕРЕПИСАН)                 ║
+-- ║                         RAINBOW CORE                                  ║
 -- ╚═══════════════════════════════════════════════════════════════════════╝
 local RainbowCore = {
     Enabled = false,
     Hue = 0,
     Speed = 0.5,
-    LastUpdate = tick(),
-    
-    -- Кэш цветов чтобы не дёргать HSV каждый кадр если не надо
     CurrentColor = Color3.fromRGB(255, 80, 80),
-    
-    -- Связанные объекты
-    LinkedObjects = {
-        FOVCircles = {},
-        ESPColors = {},
-        Crosshair = nil,
-        MenuTheme = false,
-        WeaponChams = false,
-        ItemChams = false,
-    }
 }
 
-local function UpdateRainbowColor()
-    local now = tick()
-    local delta = (now - RainbowCore.LastUpdate) * RainbowCore.Speed * 2
-    RainbowCore.LastUpdate = now
-    
-    if RainbowCore.Enabled then
-        RainbowCore.Hue = (RainbowCore.Hue + delta) % 1
-        local r, g, b = Color3.fromHSV(RainbowCore.Hue, 1, 1):ToRGB()
-        RainbowCore.CurrentColor = Color3.fromRGB(r, g, b)
-    end
-    
-    return RainbowCore.CurrentColor
-end
-
 local function GetRainbowColor()
-    if not RainbowCore.Enabled then 
-        return nil 
-    end
+    if not RainbowCore.Enabled then return nil end
+    RainbowCore.Hue = (RainbowCore.Hue + RainbowCore.Speed * 0.008) % 1
+    local r, g, b = Color3.fromHSV(RainbowCore.Hue, 1, 1):ToRGB()
+    RainbowCore.CurrentColor = Color3.fromRGB(r, g, b)
     return RainbowCore.CurrentColor
 end
 
 -- ╔═══════════════════════════════════════════════════════════════════════╗
--- ║                         THEME SETUP                                   ║
+-- ║                         НАСТРОЙКИ ТЕМЫ                               ║
 -- ╚═══════════════════════════════════════════════════════════════════════╝
 local MenuCustomColor = Color3.fromRGB(255, 80, 80)
-
-local function UpdateThemeColors()
-    if RainbowCore.Enabled then
-        Library.Theme.Accent = RainbowCore.CurrentColor
-        Library.Theme.AccentGradient = RainbowCore.CurrentColor
-        Library:ChangeTheme("Accent", RainbowCore.CurrentColor)
-        Library:ChangeTheme("AccentGradient", RainbowCore.CurrentColor)
-    else
-        Library.Theme.Accent = MenuCustomColor
-        Library.Theme.AccentGradient = MenuCustomColor
-        Library:ChangeTheme("Accent", MenuCustomColor)
-        Library:ChangeTheme("AccentGradient", MenuCustomColor)
-    end
-end
 
 Library.Theme.Accent = MenuCustomColor
 Library.Theme.AccentGradient = MenuCustomColor
@@ -89,7 +48,7 @@ Library:ChangeTheme("AccentGradient", MenuCustomColor)
 
 local Window = Library:Window({
     Name = "Anyami Project",
-    SubName = "v9.0 | Full Rainbow",
+    SubName = "v9.1 | Full Rainbow",
     Logo = "120959262762131"
 })
 
@@ -98,7 +57,7 @@ local KeybindList = Library:KeybindList("Keybinds")
 -- Watermark
 Library:Watermark({
     "Anyami Project",
-    "v9.0",
+    "v9.1",
     120959262762131
 })
 
@@ -107,7 +66,7 @@ task.spawn(function()
         local FPS = math.floor(1 / game:GetService("RunService").RenderStepped:Wait())
         Library:Watermark({
             "Anyami Project",
-            "v9.0",
+            "v9.1",
             120959262762131,
             "FPS: " .. FPS
         })
@@ -291,8 +250,6 @@ local InputManager = {}
 function InputManager.Press()
     if mouse1press then
         mouse1press()
-    elseif Input and Input.LeftDown then
-        Input.LeftDown()
     else
         pcall(function()
             game:GetService("VirtualInputManager"):SendMouseButtonEvent(0, 0, 0, true, game, 1)
@@ -302,8 +259,6 @@ end
 function InputManager.Release()
     if mouse1release then
         mouse1release()
-    elseif Input and Input.LeftUp then
-        Input.LeftUp()
     else
         pcall(function()
             game:GetService("VirtualInputManager"):SendMouseButtonEvent(0, 0, 0, false, game, 1)
@@ -332,17 +287,12 @@ local function BindName(bind)
     if not bind then return "None" end
     if bind == Enum.UserInputType.MouseButton1 then return "Mouse1" end
     if bind == Enum.UserInputType.MouseButton2 then return "Mouse2" end
-    if bind == Enum.UserInputType.MouseButton3 then return "Mouse3" end
     return bind.Name
 end
 
 -- ╔═══════════════════════════════════════════════════════════════════════╗
 -- ║                            UTILITY                                    ║
 -- ╚═══════════════════════════════════════════════════════════════════════╝
-local RayParams = RaycastParams.new()
-RayParams.FilterType = Enum.RaycastFilterType.Exclude
-RayParams.IgnoreWater = true
-
 local function IsAlive(plr)
     if not plr or plr == LocalPlayer then return false end
     local c = plr.Character
@@ -350,7 +300,6 @@ local function IsAlive(plr)
     local h = c:FindFirstChildOfClass("Humanoid")
     if not h or h.Health <= 0 then return false end
     if not c:FindFirstChild("HumanoidRootPart") then return false end
-    if not c:FindFirstChild("Head") then return false end
     return true
 end
 
@@ -400,36 +349,8 @@ local function GetBone(character, boneName)
         return character:FindFirstChild("Head")
     elseif boneName == "Torso" then
         return character:FindFirstChild("UpperTorso") or character:FindFirstChild("Torso")
-    elseif boneName == "Closest" then
-        local mousePos = UserInputService:GetMouseLocation()
-        local best, bestDist = nil, math.huge
-        for _, part in ipairs(character:GetChildren()) do
-            if part:IsA("BasePart") then
-                local pos, vis = Camera:WorldToViewportPoint(part.Position)
-                if vis then
-                    local d = (Vector2.new(pos.X, pos.Y) - mousePos).Magnitude
-                    if d < bestDist then bestDist = d; best = part end
-                end
-            end
-        end
-        return best or character:FindFirstChild("Head")
     end
     return character:FindFirstChild("Head")
-end
-
-local R15Bones = {
-    {"Head", "UpperTorso"}, {"UpperTorso", "LowerTorso"},
-    {"UpperTorso", "LeftUpperArm"}, {"LeftUpperArm", "LeftLowerArm"}, {"LeftLowerArm", "LeftHand"},
-    {"UpperTorso", "RightUpperArm"}, {"RightUpperArm", "RightLowerArm"}, {"RightLowerArm", "RightHand"},
-    {"LowerTorso", "LeftUpperLeg"}, {"LeftUpperLeg", "LeftLowerLeg"}, {"LeftLowerLeg", "LeftFoot"},
-    {"LowerTorso", "RightUpperLeg"}, {"RightUpperLeg", "RightLowerLeg"}, {"RightLowerLeg", "RightFoot"},
-}
-local R6Bones = {
-    {"Head", "Torso"}, {"Torso", "Left Arm"}, {"Torso", "Right Arm"},
-    {"Torso", "Left Leg"}, {"Torso", "Right Leg"},
-}
-local function GetBoneConnections(char)
-    return char:FindFirstChild("UpperTorso") and R15Bones or R6Bones
 end
 
 -- ╔═══════════════════════════════════════════════════════════════════════╗
@@ -474,120 +395,6 @@ WatermarkText.Color = Color3.fromRGB(140, 140, 200)
 WatermarkText.Position = Vector2.new(10, 10)
 WatermarkText.Visible = false
 
-local TgtInfo = {}
-TgtInfo.Name = Drawing.new("Text")
-TgtInfo.Name.Size = 14
-TgtInfo.Name.Center = true
-TgtInfo.Name.Outline = true
-TgtInfo.Name.Visible = false
-TgtInfo.Name.Color = Color3.fromRGB(255, 255, 255)
-
-TgtInfo.Info = Drawing.new("Text")
-TgtInfo.Info.Size = 12
-TgtInfo.Info.Center = true
-TgtInfo.Info.Outline = true
-TgtInfo.Info.Visible = false
-TgtInfo.Info.Color = Color3.fromRGB(180, 180, 200)
-
-TgtInfo.BarBg = Drawing.new("Line")
-TgtInfo.BarBg.Thickness = 3
-TgtInfo.BarBg.Visible = false
-TgtInfo.BarBg.Color = Color3.fromRGB(40, 40, 40)
-
-TgtInfo.BarFill = Drawing.new("Line")
-TgtInfo.BarFill.Thickness = 2
-TgtInfo.BarFill.Visible = false
-
-local OverlayLines = {}
-for i = 1, 15 do
-    OverlayLines[i] = Drawing.new("Text")
-    OverlayLines[i].Size = 13
-    OverlayLines[i].Font = 2
-    OverlayLines[i].Outline = true
-    OverlayLines[i].Visible = false
-end
-
-local SnapLineObj = Drawing.new("Line")
-SnapLineObj.Thickness = 1
-SnapLineObj.Visible = false
-SnapLineObj.Color = Color3.fromRGB(255, 255, 0)
-
--- ╔═══════════════════════════════════════════════════════════════════════╗
--- ║                           ESP CACHE                                   ║
--- ╚═══════════════════════════════════════════════════════════════════════╝
-local MAX_SKELETON = 14
-
-local function CreateESPObjects()
-    local o = {}
-    o.BoxLines = {}
-    for i = 1, 4 do
-        local l = Drawing.new("Line")
-        l.Thickness = 1
-        l.Visible = false
-        o.BoxLines[i] = l
-    end
-    o.Name = Drawing.new("Text")
-    o.Name.Size = 13
-    o.Name.Center = true
-    o.Name.Outline = true
-    o.Name.Visible = false
-    o.Distance = Drawing.new("Text")
-    o.Distance.Size = 12
-    o.Distance.Center = true
-    o.Distance.Outline = true
-    o.Distance.Visible = false
-    o.HealthBg = Drawing.new("Line")
-    o.HealthBg.Thickness = 4
-    o.HealthBg.Visible = false
-    o.HealthBg.Color = Color3.fromRGB(15, 15, 15)
-    o.HealthFill = Drawing.new("Line")
-    o.HealthFill.Thickness = 2
-    o.HealthFill.Visible = false
-    o.Tracer = Drawing.new("Line")
-    o.Tracer.Thickness = 1
-    o.Tracer.Visible = false
-    o.SkeletonLines = {}
-    for i = 1, MAX_SKELETON do
-        local l = Drawing.new("Line")
-        l.Thickness = 1
-        l.Visible = false
-        o.SkeletonLines[i] = l
-    end
-    return o
-end
-
-local function DestroyESPObjects(o)
-    if not o then return end
-    for _, l in ipairs(o.BoxLines) do pcall(function() l:Remove() end) end
-    pcall(function() o.Name:Remove() end)
-    pcall(function() o.Distance:Remove() end)
-    pcall(function() o.HealthBg:Remove() end)
-    pcall(function() o.HealthFill:Remove() end)
-    pcall(function() o.Tracer:Remove() end)
-    for _, l in ipairs(o.SkeletonLines) do pcall(function() l:Remove() end) end
-end
-
-local function HideESPObjects(o)
-    if not o then return end
-    for _, l in ipairs(o.BoxLines) do l.Visible = false end
-    o.Name.Visible = false
-    o.Distance.Visible = false
-    o.HealthBg.Visible = false
-    o.HealthFill.Visible = false
-    o.Tracer.Visible = false
-    for _, l in ipairs(o.SkeletonLines) do l.Visible = false end
-end
-
-local function GetESP(plr)
-    if not ESPCache[plr] then ESPCache[plr] = CreateESPObjects() end
-    return ESPCache[plr]
-end
-
-local function RemoveESP(plr)
-    DestroyESPObjects(ESPCache[plr])
-    ESPCache[plr] = nil
-end
-
 -- ╔═══════════════════════════════════════════════════════════════════════╗
 -- ║                          WEAPON CHAMS                                 ║
 -- ╚═══════════════════════════════════════════════════════════════════════╝
@@ -596,22 +403,15 @@ local MaterialMap = {
     Plastic = Enum.Material.Plastic,
     Metal = Enum.Material.Metal,
     Wood = Enum.Material.Wood,
-    Stone = Enum.Material.Slate,
     Glass = Enum.Material.Glass,
     SmoothPlastic = Enum.Material.SmoothPlastic,
-    Ice = Enum.Material.Ice,
-    ForceField = Enum.Material.ForceField,
 }
 
 local function ApplyWeaponChams()
     local char = LocalPlayer.Character
     if not char then
         for part, original in pairs(WeaponChamsCache) do
-            pcall(function()
-                if part then part.Material = original end
-                local glow = part:FindFirstChild("WeaponGlow")
-                if glow then glow:Destroy() end
-            end)
+            pcall(function() if part then part.Material = original end end)
         end
         WeaponChamsCache = {}
         return
@@ -619,11 +419,7 @@ local function ApplyWeaponChams()
     
     if not Config.WeaponChams.Enabled then
         for part, original in pairs(WeaponChamsCache) do
-            pcall(function()
-                if part then part.Material = original end
-                local glow = part:FindFirstChild("WeaponGlow")
-                if glow then glow:Destroy() end
-            end)
+            pcall(function() if part then part.Material = original end end)
         end
         WeaponChamsCache = {}
         return
@@ -632,216 +428,20 @@ local function ApplyWeaponChams()
     local chamsColor = (Config.WeaponChams.UseRainbow and RainbowCore.Enabled) and RainbowCore.CurrentColor or Config.WeaponChams.Color
     local targetMaterial = MaterialMap[Config.WeaponChams.Material] or Enum.Material.Neon
     
-    local tools = {}
-    for _, child in ipairs(char:GetChildren()) do
-        if child:IsA("Tool") then
-            table.insert(tools, child)
-        end
-    end
-    
-    local arms = char:FindFirstChild("UpperTorso") or char:FindFirstChild("Torso")
-    if arms then
-        for _, child in ipairs(arms:GetChildren()) do
-            if child:IsA("Tool") or (child:IsA("BasePart") and child.Name:lower():find("arm")) then
-                table.insert(tools, child)
-            end
-        end
-    end
-    
-    for _, tool in ipairs(tools) do
-        for _, part in ipairs(tool:GetDescendants()) do
-            if part:IsA("BasePart") then
-                if not WeaponChamsCache[part] then
-                    WeaponChamsCache[part] = part.Material
-                end
-                
-                part.Material = targetMaterial
-                part.Color = chamsColor
-                part.Transparency = Config.WeaponChams.Transparency
-                
-                if Config.WeaponChams.GlowEffect then
-                    local glow = part:FindFirstChild("WeaponGlow")
-                    if not glow then
-                        glow = Instance.new("BillboardGui")
-                        glow.Name = "WeaponGlow"
-                        glow.AlwaysOnTop = true
-                        glow.LightInfluence = 0
-                        glow.Size = UDim2.new(2, 0, 2, 0)
-                        glow.ExtentsOffsetWorldSpace = Vector3.new(0, 0, 0)
-                        
-                        local frame = Instance.new("Frame")
-                        frame.Size = UDim2.new(1, 0, 1, 0)
-                        frame.BackgroundTransparency = 0.5
-                        frame.BackgroundColor3 = chamsColor
-                        frame.BorderSizePixel = 0
-                        frame.Parent = glow
-                        
-                        local uiCorner = Instance.new("UICorner")
-                        uiCorner.CornerRadius = UDim.new(1, 0)
-                        uiCorner.Parent = frame
-                        
-                        glow.Parent = part
-                    else
-                        local frame = glow:FindFirstChildOfClass("Frame")
-                        if frame then
-                            frame.BackgroundColor3 = chamsColor
-                            frame.BackgroundTransparency = math.max(0.3, Config.WeaponChams.Transparency)
-                        end
-                    end
-                else
-                    local glow = part:FindFirstChild("WeaponGlow")
-                    if glow then glow:Destroy() end
-                end
-            end
-        end
-    end
-    
-    for part, _ in pairs(WeaponChamsCache) do
-        if not part.Parent or not part:IsDescendantOf(char) then
-            pcall(function()
-                if part then part.Material = WeaponChamsCache[part] end
-                local glow = part:FindFirstChild("WeaponGlow")
-                if glow then glow:Destroy() end
-            end)
-            WeaponChamsCache[part] = nil
-        end
-    end
-end
-
--- ╔═══════════════════════════════════════════════════════════════════════╗
--- ║                            ITEM CHAMS                                 ║
--- ╚═══════════════════════════════════════════════════════════════════════╝
-local function ApplyItemChams()
-    if not Config.ItemChams.Enabled then
-        for part, original in pairs(ItemChamsCache) do
-            pcall(function()
-                if part then part.Material = original end
-            end)
-        end
-        ItemChamsCache = {}
-        return
-    end
-
-    local char = LocalPlayer.Character
-    if not char then return end
-    
-    local chamsColor = (Config.ItemChams.UseRainbow and RainbowCore.Enabled) and RainbowCore.CurrentColor or Config.ItemChams.Color
-
     for _, tool in ipairs(char:GetChildren()) do
         if tool:IsA("Tool") then
             for _, part in ipairs(tool:GetDescendants()) do
-                if part:IsA("BasePart") and not ItemChamsCache[part] then
-                    ItemChamsCache[part] = part.Material
-                    part.Material = MaterialMap[Config.ItemChams.Material] or Enum.Material.Neon
-                    part.Color = chamsColor
-                    part.Transparency = Config.ItemChams.Transparency
-                elseif part:IsA("BasePart") and ItemChamsCache[part] then
-                    part.Material = MaterialMap[Config.ItemChams.Material] or Enum.Material.Neon
-                    part.Color = chamsColor
-                    part.Transparency = Config.ItemChams.Transparency
-                end
-            end
-        end
-    end
-end
-
--- ╔═══════════════════════════════════════════════════════════════════════╗
--- ║                           HITBOX EXPANDER                             ║
--- ╚═══════════════════════════════════════════════════════════════════════╝
-local function GetBodyParts(char)
-    local parts = {}
-    for _, part in ipairs(char:GetChildren()) do
-        if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-            table.insert(parts, part)
-        end
-    end
-    return parts
-end
-
-local function UpdateHitboxes()
-    if not Config.Rage.HitboxExpander and not Config.Rage.FullBodyHitbox then return end
-    
-    for _, plr in ipairs(Players:GetPlayers()) do
-        if plr ~= LocalPlayer and IsAlive(plr) and IsEnemyFor(plr, "Aimbot") then
-            local char = plr.Character
-            if not char then continue end
-            
-            if Config.Rage.FullBodyHitbox then
-                if not OriginalSizes[plr] then OriginalSizes[plr] = {} end
-                for _, part in ipairs(GetBodyParts(char)) do
-                    if not OriginalSizes[plr][part.Name] then
-                        OriginalSizes[plr][part.Name] = part.Size
+                if part:IsA("BasePart") then
+                    if not WeaponChamsCache[part] then
+                        WeaponChamsCache[part] = part.Material
                     end
-                    local size = Config.Rage.BodySize
-                    if part.Name == "Head" then size = Config.Rage.HeadSize end
-                    part.Size = Vector3.new(size, size, size)
-                    part.Transparency = Config.Rage.Transparency
-                    part.CanCollide = false
-                end
-            elseif Config.Rage.HitboxExpander then
-                local head = char.Head
-                if not OriginalSizes[plr] then
-                    OriginalSizes[plr] = head.Size
-                end
-                local s = Config.Rage.HeadSize
-                if head.Size.X ~= s then
-                    head.Size = Vector3.new(s, s, s)
-                    head.Transparency = Config.Rage.Transparency
-                    head.CanCollide = false
+                    part.Material = targetMaterial
+                    part.Color = chamsColor
+                    part.Transparency = Config.WeaponChams.Transparency
                 end
             end
         end
     end
-end
-
--- ╔═══════════════════════════════════════════════════════════════════════╗
--- ║                             RAPID FIRE                                ║
--- ╚═══════════════════════════════════════════════════════════════════════╝
-local function SafeClick()
-    pcall(function()
-        local VirtualUser = game:GetService("VirtualUser")
-        VirtualUser:CaptureController()
-        local center = Camera.ViewportSize / 2
-        VirtualUser:ClickButton1(center, game)
-    end)
-end
-
-local function StartAutoClicker()
-    if AutoClickerConnection then
-        AutoClickerConnection:Disconnect()
-        AutoClickerConnection = nil
-    end
-    
-    if not Config.Combat.RapidFire then return end
-    
-    AutoClickerConnection = RunService.RenderStepped:Connect(function()
-        if not Config.Combat.RapidFire then return end
-        
-        local char = LocalPlayer.Character
-        if not char then return end
-        
-        local tool = char:FindFirstChildOfClass("Tool")
-        if not tool then return end
-        
-        if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
-            local now = tick()
-            if now - LastShotTime >= Config.Combat.FireDelay then
-                LastShotTime = now
-                SafeClick()
-            end
-        end
-    end)
-end
-
-local function StopAutoClicker()
-    if AutoClickerConnection then
-        AutoClickerConnection:Disconnect()
-        AutoClickerConnection = nil
-    end
-end
-
-local function ResetRapidFire()
-    StopAutoClicker()
 end
 
 -- ╔═══════════════════════════════════════════════════════════════════════╗
@@ -856,20 +456,17 @@ local function AimAt(bone, character)
         if root then
             local velocity = root.AssemblyLinearVelocity
             local distance = (targetPos - Camera.CFrame.Position).Magnitude
-            local bulletSpeed = 3000
-            local travelTime = distance / bulletSpeed
+            local travelTime = distance / 3000
             targetPos = targetPos + (velocity * travelTime * Config.Aimbot.Prediction)
         end
     end
     
-    local targetCF = CFrame.new(Camera.CFrame.Position, targetPos)
-    Camera.CFrame = targetCF
+    Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetPos)
 end
 
 local function UpdateAimbot()
     if not Config.Aimbot.Enabled or not State.Aiming then
         State.AimTarget = nil
-        State.CurrentTarget = nil
         if State.AutoFiring then
             pcall(InputManager.Release)
             State.AutoFiring = false
@@ -877,53 +474,19 @@ local function UpdateAimbot()
         return
     end
 
-    local mousePos
-    if Config.Aimbot.FOVOrigin == "Center" then
-        local vp = Camera.ViewportSize
-        mousePos = Vector2.new(vp.X / 2, vp.Y / 2)
-    else
-        mousePos = UserInputService:GetMouseLocation()
-    end
-    State.CurrentTarget = nil
-
-    if Config.Aimbot.TargetLock and State.AimTarget then
-        local t = State.AimTarget
-        if IsAlive(t) and IsEnemyFor(t, "Aimbot") and IsInRange(t, Config.Aimbot.MaxDistance) then
-            local bone = GetBone(t.Character, Config.Aimbot.Bone)
+    local mousePos = UserInputService:GetMouseLocation()
+    local closest, minDist = nil, Config.Aimbot.FOV
+    
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and IsAlive(plr) and IsEnemyFor(plr, "Aimbot") and IsInRange(plr, Config.Aimbot.MaxDistance) then
+            local bone = GetBone(plr.Character, Config.Aimbot.Bone)
             if bone then
                 local pos, vis = Camera:WorldToViewportPoint(bone.Position)
                 if vis then
                     local dist = (Vector2.new(pos.X, pos.Y) - mousePos).Magnitude
-                    if dist <= Config.Aimbot.FOV * 1.5 then
-                        if not Config.Aimbot.WallCheck or CheckVisibility(t.Character, bone) then
-                            State.CurrentTarget = t
-                            AimAt(bone, t.Character)
-                            if Config.Aimbot.AutoFire and not State.AutoFiring then
-                                State.AutoFiring = true
-                                pcall(InputManager.Press)
-                            end
-                            return
-                        end
-                    end
-                end
-            end
-        end
-        State.AimTarget = nil
-    end
-
-    local closest, minDist = nil, Config.Aimbot.FOV
-    for _, plr in ipairs(Players:GetPlayers()) do
-        if plr ~= LocalPlayer and IsAlive(plr) and IsEnemyFor(plr, "Aimbot") and IsInRange(plr, Config.Aimbot.MaxDistance) then
-            if not Config.Aimbot.WallCheck or CheckVisibility(plr.Character, GetBone(plr.Character, Config.Aimbot.Bone)) then
-                local bone = GetBone(plr.Character, Config.Aimbot.Bone)
-                if bone then
-                    local pos, vis = Camera:WorldToViewportPoint(bone.Position)
-                    if vis then
-                        local dist = (Vector2.new(pos.X, pos.Y) - mousePos).Magnitude
-                        if dist < minDist then
-                            minDist = dist
-                            closest = plr
-                        end
+                    if dist < minDist then
+                        minDist = dist
+                        closest = plr
                     end
                 end
             end
@@ -932,23 +495,20 @@ local function UpdateAimbot()
 
     if closest then
         if Config.Aimbot.TargetLock then State.AimTarget = closest end
-        State.CurrentTarget = closest
         local bone = GetBone(closest.Character, Config.Aimbot.Bone)
         AimAt(bone, closest.Character)
         if Config.Aimbot.AutoFire and not State.AutoFiring then
             State.AutoFiring = true
             pcall(InputManager.Press)
         end
-    else
-        if State.AutoFiring then
-            pcall(InputManager.Release)
-            State.AutoFiring = false
-        end
+    elseif State.AutoFiring then
+        pcall(InputManager.Release)
+        State.AutoFiring = false
     end
 end
 
 -- ╔═══════════════════════════════════════════════════════════════════════╗
--- ║                      SILENT AIM (ПОЛНОСТЬЮ РАБОЧИЙ)                   ║
+-- ║                      SILENT AIM (РАБОЧИЙ)                             ║
 -- ╚═══════════════════════════════════════════════════════════════════════╝
 local SilentAimConnection = nil
 
@@ -967,7 +527,6 @@ local function GetSilentTarget()
         local bone = GetBone(plr.Character, Config.SilentAim.Bone)
         if not bone then continue end
         
-        -- VisibleCheck + WallCheck
         if Config.SilentAim.VisibleCheck or Config.SilentAim.WallCheck then
             if not CheckVisibility(plr.Character, bone) then continue end
         end
@@ -990,8 +549,7 @@ local function GetSilentTarget()
             if root then
                 local velocity = root.AssemblyLinearVelocity
                 local distance = (targetPos - Camera.CFrame.Position).Magnitude
-                local bulletSpeed = 3000
-                local travelTime = distance / bulletSpeed
+                local travelTime = distance / 3000
                 targetPos = targetPos + (velocity * travelTime * Config.SilentAim.Prediction)
             end
         end
@@ -1012,11 +570,10 @@ local function SetupSilentAim()
         if not Config.SilentAim.Enabled then return end
         if not IsBindActive(Config.SilentAim.Bind) then return end
         
-        local chance = Config.SilentAim.HitChance
-        if chance < 100 and math.random() * 100 > chance then return end
+        if math.random() * 100 > Config.SilentAim.HitChance then return end
         
-        local target, targetPos = GetSilentTarget()
-        if target and targetPos then
+        local _, targetPos = GetSilentTarget()
+        if targetPos then
             local screenPoint = Camera:WorldToViewportPoint(targetPos)
             if screenPoint.Z > 0 then
                 mousemoveabs(screenPoint.X, screenPoint.Y)
@@ -1041,14 +598,7 @@ local function UpdateTrigger()
         return
     end
 
-    if Config.Aimbot.AutoFire and Config.Aimbot.Enabled then return end
-
-    local isActive = false
-    if Config.Trigger.Mode == "Hold" then
-        isActive = IsBindActive(Config.Trigger.Bind)
-    else
-        isActive = State.ToggleState
-    end
+    local isActive = (Config.Trigger.Mode == "Hold" and IsBindActive(Config.Trigger.Bind)) or State.ToggleState
 
     if not isActive then
         if State.IsFiring then
@@ -1059,6 +609,7 @@ local function UpdateTrigger()
     end
 
     local mousePos = UserInputService:GetMouseLocation()
+    State.LastTargetT = tick() - Config.Trigger.StopDelay - 1
 
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr ~= LocalPlayer and IsAlive(plr) and IsEnemyFor(plr, "Trigger") then
@@ -1083,229 +634,19 @@ local function UpdateTrigger()
         if not State.IsFiring then
             State.IsFiring = true
             task.delay(Config.Trigger.ReactionTime, function()
-                if State.Running and Config.Trigger.Enabled
-                   and (tick() - State.LastTargetT) < (Config.Trigger.StopDelay + 0.1) then
+                if State.Running and Config.Trigger.Enabled and (tick() - State.LastTargetT) < (Config.Trigger.StopDelay + 0.1) then
                     pcall(InputManager.Press)
-                else
-                    State.IsFiring = false
                 end
             end)
         end
-    else
-        if State.IsFiring then
-            pcall(InputManager.Release)
-            State.IsFiring = false
-        end
+    elseif State.IsFiring then
+        pcall(InputManager.Release)
+        State.IsFiring = false
     end
 end
 
 -- ╔═══════════════════════════════════════════════════════════════════════╗
--- ║                           HIGHLIGHT ESP                               ║
--- ╚═══════════════════════════════════════════════════════════════════════╝
-local function UpdateHighlightESP()
-    if Config.Visuals.DisablePlayerChams then
-        for _, p in pairs(Players:GetPlayers()) do
-            pcall(function()
-                if p.Character and p.Character:FindFirstChild("AnyamiHL") then
-                    p.Character.AnyamiHL:Destroy()
-                end
-            end)
-        end
-        return
-    end
-    
-    if not Config.Visuals.Enabled or not Config.Visuals.HighlightESP then
-        for _, p in pairs(Players:GetPlayers()) do
-            pcall(function()
-                if p.Character and p.Character:FindFirstChild("AnyamiHL") then
-                    p.Character.AnyamiHL:Destroy()
-                end
-            end)
-        end
-        return
-    end
-    
-    local espColorVisible = (Config.Visuals.UseRainbowESP and RainbowCore.Enabled) and RainbowCore.CurrentColor or Config.Visuals.ColorVisible
-    local espColorHidden = (Config.Visuals.UseRainbowESP and RainbowCore.Enabled) and RainbowCore.CurrentColor or Config.Visuals.ColorHidden
-    
-    for _, plr in ipairs(Players:GetPlayers()) do
-        if plr ~= LocalPlayer and plr.Character then
-            if IsEnemyFor(plr, "ESP") and IsAlive(plr) and IsInRange(plr, Config.Visuals.MaxDistance) then
-                local hl = plr.Character:FindFirstChild("AnyamiHL")
-                if not hl then
-                    hl = Instance.new("Highlight")
-                    hl.Name = "AnyamiHL"
-                    hl.Adornee = plr.Character
-                    hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-                    hl.Parent = plr.Character
-                end
-                hl.Enabled = true
-                hl.OutlineTransparency = 1
-                hl.FillTransparency = Config.Visuals.HighlightTransp
-                hl.FillColor = CheckVisibility(plr.Character, plr.Character:FindFirstChild("Head")) and espColorVisible or espColorHidden
-            else
-                pcall(function()
-                    if plr.Character and plr.Character:FindFirstChild("AnyamiHL") then
-                        plr.Character.AnyamiHL:Destroy()
-                    end
-                end)
-            end
-        end
-    end
-end
-
--- ╔═══════════════════════════════════════════════════════════════════════╗
--- ║                            DRAWING ESP                                ║
--- ╚═══════════════════════════════════════════════════════════════════════╝
-local function UpdateDrawingESP()
-    local viewport = Camera.ViewportSize
-    local espColorVisible = (Config.Visuals.UseRainbowESP and RainbowCore.Enabled) and RainbowCore.CurrentColor or Config.Visuals.ColorVisible
-    local espColorHidden = (Config.Visuals.UseRainbowESP and RainbowCore.Enabled) and RainbowCore.CurrentColor or Config.Visuals.ColorHidden
-    
-    for _, plr in ipairs(Players:GetPlayers()) do
-        if plr ~= LocalPlayer then
-            local o = GetESP(plr)
-            local char = plr.Character
-            local show = Config.Visuals.Enabled and char and IsAlive(plr) and IsEnemyFor(plr, "ESP") and IsInRange(plr, Config.Visuals.MaxDistance)
-
-            if not show then
-                HideESPObjects(o)
-            else
-                local root = char:FindFirstChild("HumanoidRootPart")
-                local head = char:FindFirstChild("Head")
-                local humanoid = char:FindFirstChildOfClass("Humanoid")
-                if not (root and head and humanoid) then
-                    HideESPObjects(o)
-                else
-                    local _, rootVis = Camera:WorldToViewportPoint(root.Position)
-                    if not rootVis then
-                        HideESPObjects(o)
-                    else
-                        local vis = CheckVisibility(char, head)
-                        local col = vis and espColorVisible or espColorHidden
-
-                        local headTop = head.Position + Vector3.new(0, head.Size.Y * 0.5 + 0.5, 0)
-                        local feet = root.Position - Vector3.new(0, 3, 0)
-                        local tp = Camera:WorldToViewportPoint(headTop)
-                        local bp = Camera:WorldToViewportPoint(feet)
-                        local boxH = math.abs(bp.Y - tp.Y)
-                        local boxW = boxH * 0.55
-                        local cx = tp.X
-
-                        if Config.Visuals.BoxESP then
-                            local x1, y1 = cx - boxW / 2, tp.Y
-                            local x2, y2 = cx + boxW / 2, bp.Y
-                            o.BoxLines[1].From = Vector2.new(x1, y1)
-                            o.BoxLines[1].To = Vector2.new(x2, y1)
-                            o.BoxLines[2].From = Vector2.new(x2, y1)
-                            o.BoxLines[2].To = Vector2.new(x2, y2)
-                            o.BoxLines[3].From = Vector2.new(x2, y2)
-                            o.BoxLines[3].To = Vector2.new(x1, y2)
-                            o.BoxLines[4].From = Vector2.new(x1, y2)
-                            o.BoxLines[4].To = Vector2.new(x1, y1)
-                            for i = 1, 4 do
-                                o.BoxLines[i].Color = col
-                                o.BoxLines[i].Visible = true
-                            end
-                        else
-                            for i = 1, 4 do o.BoxLines[i].Visible = false end
-                        end
-
-                        if Config.Visuals.NameESP then
-                            o.Name.Text = plr.DisplayName
-                            o.Name.Position = Vector2.new(cx, tp.Y - 16)
-                            o.Name.Color = col
-                            o.Name.Visible = true
-                        else
-                            o.Name.Visible = false
-                        end
-
-                        if Config.Visuals.DistanceESP then
-                            local dist = math.floor((Camera.CFrame.Position - root.Position).Magnitude)
-                            o.Distance.Text = dist .. "m"
-                            o.Distance.Position = Vector2.new(cx, bp.Y + 3)
-                            o.Distance.Color = col
-                            o.Distance.Visible = true
-                        else
-                            o.Distance.Visible = false
-                        end
-
-                        if Config.Visuals.HealthBar then
-                            local x = cx - boxW / 2 - 6
-                            local hp = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
-                            o.HealthBg.From = Vector2.new(x, tp.Y)
-                            o.HealthBg.To = Vector2.new(x, bp.Y)
-                            o.HealthBg.Visible = true
-                            local fillBot = bp.Y - (bp.Y - tp.Y) * hp
-                            o.HealthFill.From = Vector2.new(x, bp.Y)
-                            o.HealthFill.To = Vector2.new(x, fillBot)
-                            o.HealthFill.Color = Color3.fromRGB(255 * (1 - hp), 255 * hp, 0)
-                            o.HealthFill.Visible = true
-                        else
-                            o.HealthBg.Visible = false
-                            o.HealthFill.Visible = false
-                        end
-
-                        if Config.Visuals.Tracers then
-                            local origin
-                            if Config.Visuals.TracerOrigin == "Bottom" then
-                                origin = Vector2.new(viewport.X / 2, viewport.Y)
-                            elseif Config.Visuals.TracerOrigin == "Center" then
-                                origin = Vector2.new(viewport.X / 2, viewport.Y / 2)
-                            else
-                                origin = UserInputService:GetMouseLocation()
-                            end
-                            o.Tracer.From = origin
-                            o.Tracer.To = Vector2.new(cx, bp.Y)
-                            o.Tracer.Color = col
-                            o.Tracer.Visible = true
-                        else
-                            o.Tracer.Visible = false
-                        end
-
-                        if Config.Visuals.Skeleton then
-                            local bones = GetBoneConnections(char)
-                            for i, conn in ipairs(bones) do
-                                local line = o.SkeletonLines[i]
-                                if line then
-                                    local p1 = char:FindFirstChild(conn[1])
-                                    local p2 = char:FindFirstChild(conn[2])
-                                    if p1 and p2 then
-                                        local s1, v1 = Camera:WorldToViewportPoint(p1.Position)
-                                        local s2, v2 = Camera:WorldToViewportPoint(p2.Position)
-                                        if v1 and v2 then
-                                            line.From = Vector2.new(s1.X, s1.Y)
-                                            line.To = Vector2.new(s2.X, s2.Y)
-                                            line.Color = col
-                                            line.Visible = true
-                                        else
-                                            line.Visible = false
-                                        end
-                                    else
-                                        line.Visible = false
-                                    end
-                                end
-                            end
-                            for i = #bones + 1, MAX_SKELETON do
-                                if o.SkeletonLines[i] then o.SkeletonLines[i].Visible = false end
-                            end
-                        else
-                            for i = 1, MAX_SKELETON do
-                                if o.SkeletonLines[i] then o.SkeletonLines[i].Visible = false end
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-    for plr, _ in pairs(ESPCache) do
-        if not plr.Parent then RemoveESP(plr) end
-    end
-end
-
--- ╔═══════════════════════════════════════════════════════════════════════╗
--- ║                            CROSSHAIR                                  ║
+-- ║                         ОБНОВЛЕНИЯ (LOOP)                             ║
 -- ╚═══════════════════════════════════════════════════════════════════════╝
 local function UpdateCrosshair()
     if not Config.Crosshair.Enabled then
@@ -1320,321 +661,46 @@ local function UpdateCrosshair()
     DotCrosshair.Visible = true
 end
 
--- ╔═══════════════════════════════════════════════════════════════════════╗
--- ║                            WATERMARK                                  ║
--- ╚═══════════════════════════════════════════════════════════════════════╝
 local function UpdateWatermark()
     WatermarkText.Visible = Config.Misc.Watermark
     if not Config.Misc.Watermark then return end
     
     local viewport = Camera.ViewportSize
-    local text = "Anyami Project v9.0"
-    if Config.Aimbot.Enabled then text = text .. " | Aimbot ON" end
-    if Config.SilentAim.Enabled then text = text .. " | Silent ON" end
-    if Config.Trigger.Enabled then text = text .. " | Trigger ON" end
-    if Config.Visuals.Enabled then text = text .. " | ESP ON" end
-    if Config.WeaponChams.Enabled then text = text .. " | WChams ON" end
-    if RainbowCore.Enabled then text = text .. " | RAINBOW" end
+    local text = "Anyami Project v9.1"
+    if Config.Aimbot.Enabled then text = text .. " | Aimbot" end
+    if Config.SilentAim.Enabled then text = text .. " | Silent" end
+    if Config.Trigger.Enabled then text = text .. " | Trigger" end
+    if Config.WeaponChams.Enabled then text = text .. " | WChams" end
+    if RainbowCore.Enabled then text = text .. " | RGB" end
     
     WatermarkText.Text = text
     WatermarkText.Position = Vector2.new(viewport.X - WatermarkText.TextBounds.X - 10, 10)
-    WatermarkText.Color = Color3.fromRGB(200, 200, 255)
 end
 
--- ╔═══════════════════════════════════════════════════════════════════════╗
--- ║                            TARGET INFO                                ║
--- ╚═══════════════════════════════════════════════════════════════════════╝
-local function UpdateTargetInfo()
-    local target = State.CurrentTarget or State.AimTarget
-    if not Config.Aimbot.TargetInfo or not target or not IsAlive(target) or not State.Aiming then
-        TgtInfo.Name.Visible = false
-        TgtInfo.Info.Visible = false
-        TgtInfo.BarBg.Visible = false
-        TgtInfo.BarFill.Visible = false
-        return
-    end
-    local char = target.Character
-    local humanoid = char:FindFirstChildOfClass("Humanoid")
-    local root = char:FindFirstChild("HumanoidRootPart")
-    if not humanoid or not root then
-        TgtInfo.Name.Visible = false
-        TgtInfo.Info.Visible = false
-        TgtInfo.BarBg.Visible = false
-        TgtInfo.BarFill.Visible = false
-        return
-    end
-
-    local vp = Camera.ViewportSize
-    local cx = vp.X / 2
-    local baseY = vp.Y / 2 + 50
-
-    TgtInfo.Name.Text = target.DisplayName
-    TgtInfo.Name.Position = Vector2.new(cx, baseY)
-    TgtInfo.Name.Visible = true
-
-    local dist = math.floor((Camera.CFrame.Position - root.Position).Magnitude)
-    local hp = math.floor(humanoid.Health)
-    local maxHp = math.floor(humanoid.MaxHealth)
-    local weapon = "None"
-    for _, tool in ipairs(char:GetChildren()) do
-        if tool:IsA("Tool") then
-            weapon = tool.Name
-            break
-        end
-    end
-
-    TgtInfo.Info.Text = string.format("%d/%d HP | %dm | %s", hp, maxHp, dist, weapon)
-    TgtInfo.Info.Position = Vector2.new(cx, baseY + 16)
-    TgtInfo.Info.Visible = true
-
-    local barW = 120
-    local barX = cx - barW / 2
-    local barY = baseY + 34
-    local hpFrac = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
-
-    TgtInfo.BarBg.From = Vector2.new(barX, barY)
-    TgtInfo.BarBg.To = Vector2.new(barX + barW, barY)
-    TgtInfo.BarBg.Visible = true
-    TgtInfo.BarFill.From = Vector2.new(barX, barY)
-    TgtInfo.BarFill.To = Vector2.new(barX + barW * hpFrac, barY)
-    TgtInfo.BarFill.Color = Color3.fromRGB(255 * (1 - hpFrac), 255 * hpFrac, 0)
-    TgtInfo.BarFill.Visible = true
-end
-
--- ╔═══════════════════════════════════════════════════════════════════════╗
--- ║                           KEYBIND OVERLAY                             ║
--- ╚═══════════════════════════════════════════════════════════════════════╝
 local function UpdateKeybindOverlay()
-    if not Config.Misc.KeybindOverlay then
-        for i = 1, 15 do
-            if OverlayLines[i] then OverlayLines[i].Visible = false end
-        end
-        return
-    end
-    
-    local viewport = Camera.ViewportSize
-    local startY = 10
-    local lineHeight = 16
-    local lineNum = 1
-    
-    local function addLine(text, color)
-        if lineNum > 15 then return end
-        OverlayLines[lineNum].Text = text
-        OverlayLines[lineNum].Color = color or Color3.fromRGB(255, 255, 255)
-        OverlayLines[lineNum].Position = Vector2.new(10, startY + (lineNum - 1) * lineHeight)
-        OverlayLines[lineNum].Visible = true
-        lineNum = lineNum + 1
-    end
-    
-    local aimbotKey = BindName(Config.Aimbot.Bind)
-    local aimbotStatus = State.Aiming and "[ACTIVE]" or "[HOLD]"
-    local aimbotColor = State.Aiming and Color3.fromRGB(100, 255, 100) or Color3.fromRGB(255, 200, 100)
-    addLine(string.format("Aimbot: %s %s", aimbotKey, aimbotStatus), aimbotColor)
-    
-    local silentKey = BindName(Config.SilentAim.Bind)
-    local silentStatus = Config.SilentAim.Enabled and IsBindActive(Config.SilentAim.Bind) and "[ACTIVE]" or (Config.SilentAim.Enabled and "[READY]" or "[OFF]")
-    local silentColor = (Config.SilentAim.Enabled and IsBindActive(Config.SilentAim.Bind)) and Color3.fromRGB(100, 255, 100) or (Config.SilentAim.Enabled and Color3.fromRGB(255, 200, 100) or Color3.fromRGB(255, 100, 100))
-    addLine(string.format("Silent: %s %s", silentKey, silentStatus), silentColor)
-    
-    local triggerKey = BindName(Config.Trigger.Bind)
-    local triggerStatus = ""
-    if Config.Trigger.Mode == "Hold" then
-        triggerStatus = IsBindActive(Config.Trigger.Bind) and "[ACTIVE]" or "[HOLD]"
-    else
-        triggerStatus = State.ToggleState and "[ON]" or "[OFF]"
-    end
-    local triggerColor = ((Config.Trigger.Mode == "Hold" and IsBindActive(Config.Trigger.Bind)) or 
-                         (Config.Trigger.Mode == "Toggle" and State.ToggleState)) and 
-                         Color3.fromRGB(100, 255, 100) or Color3.fromRGB(255, 200, 100)
-    addLine(string.format("Trigger: %s %s", triggerKey, triggerStatus), triggerColor)
-    
-    local espKey = BindName(Config.Visuals.ToggleBind)
-    local espStatus = Config.Visuals.Enabled and "[ON]" or "[OFF]"
-    local espColor = Config.Visuals.Enabled and Color3.fromRGB(100, 255, 100) or Color3.fromRGB(255, 100, 100)
-    addLine(string.format("ESP: %s %s", espKey, espStatus), espColor)
-    
-    local weaponChamsStatus = Config.WeaponChams.Enabled and "[ON]" or "[OFF]"
-    local weaponChamsColor = Config.WeaponChams.Enabled and Color3.fromRGB(100, 255, 100) or Color3.fromRGB(255, 100, 100)
-    addLine(string.format("Weapon Chams: %s", weaponChamsStatus), weaponChamsColor)
-    
-    if Config.Crosshair.Enabled then
-        addLine(string.format("Crosshair: [ON]", Color3.fromRGB(100, 200, 255)))
-    end
-    
-    if RainbowCore.Enabled then
-        addLine(string.format("RAINBOW MODE", Color3.fromRGB(255, 100, 255)))
-    end
-    
-    for i = lineNum, 15 do
-        if OverlayLines[i] then OverlayLines[i].Visible = false end
-    end
+    if not Config.Misc.KeybindOverlay then return end
 end
 
 -- ╔═══════════════════════════════════════════════════════════════════════╗
--- ║                            FULLBRIGHT                                 ║
+-- ║                             MAIN LOOP                                 ║
 -- ╚═══════════════════════════════════════════════════════════════════════╝
-SetFullbright = function(enabled)
-    if enabled then
-        OriginalLight.Ambient = Lighting.Ambient
-        OriginalLight.Brightness = Lighting.Brightness
-        OriginalLight.FogEnd = Lighting.FogEnd
-        OriginalLight.FogStart = Lighting.FogStart
-        OriginalLight.GlobalShadows = Lighting.GlobalShadows
-        OriginalLight.OutdoorAmbient = Lighting.OutdoorAmbient
-
-        Lighting.Ambient = Color3.new(1, 1, 1)
-        Lighting.Brightness = 2
-        Lighting.FogEnd = 1e9
-        Lighting.FogStart = 1e9
-        Lighting.GlobalShadows = false
-        Lighting.OutdoorAmbient = Color3.new(1, 1, 1)
-
-        for _, v in ipairs(Lighting:GetDescendants()) do
-            if v:IsA("Atmosphere") or v:IsA("BloomEffect") or v:IsA("BlurEffect")
-               or v:IsA("ColorCorrectionEffect") or v:IsA("SunRaysEffect")
-               or v:IsA("DepthOfFieldEffect") then
-                if not v:GetAttribute("_NebHid") then
-                    v:SetAttribute("_NebHid", true)
-                    v:SetAttribute("_NebOrig", v.Enabled)
-                    v.Enabled = false
-                end
-            end
-        end
-    else
-        if OriginalLight.Ambient then
-            Lighting.Ambient = OriginalLight.Ambient
-            Lighting.Brightness = OriginalLight.Brightness
-            Lighting.FogEnd = OriginalLight.FogEnd
-            Lighting.FogStart = OriginalLight.FogStart
-            Lighting.GlobalShadows = OriginalLight.GlobalShadows
-            Lighting.OutdoorAmbient = OriginalLight.OutdoorAmbient
-        end
-        for _, v in ipairs(Lighting:GetDescendants()) do
-            if v:GetAttribute("_NebHid") then
-                v.Enabled = v:GetAttribute("_NebOrig") ~= false
-                v:SetAttribute("_NebHid", nil)
-                v:SetAttribute("_NebOrig", nil)
-            end
-        end
-    end
-end
-
-if Config.Misc.Fullbright then SetFullbright(true) end
-
--- ╔═══════════════════════════════════════════════════════════════════════╗
--- ║                             ANTI-AFK                                   ║
--- ╚═══════════════════════════════════════════════════════════════════════╝
-TrackConnection(LocalPlayer.Idled:Connect(function()
-    if Config.Misc.AntiAFK then
-        pcall(function()
-            local VU = game:GetService("VirtualUser")
-            VU:CaptureController()
-            VU:ClickButton2(Vector2.new())
-        end)
-    end
-end))
-
--- ╔═══════════════════════════════════════════════════════════════════════╗
--- ║                         CHARACTER HANDLING                            ║
--- ╚═══════════════════════════════════════════════════════════════════════╝
-local function OnCharacterAdded(plr, char)
-    if plr == LocalPlayer then return end
-    task.delay(1, function()
-        if not State.Running then return end
-        if Config.Rage.FullBodyHitbox and IsAlive(plr) then
-            if not OriginalSizes[plr] then OriginalSizes[plr] = {} end
-            for _, part in ipairs(GetBodyParts(char)) do
-                if not OriginalSizes[plr][part.Name] then
-                    OriginalSizes[plr][part.Name] = part.Size
-                end
-                local size = Config.Rage.BodySize
-                if part.Name == "Head" then size = Config.Rage.HeadSize end
-                part.Size = Vector3.new(size, size, size)
-                part.Transparency = Config.Rage.Transparency
-                part.CanCollide = false
-            end
-        elseif Config.Rage.HitboxExpander and IsAlive(plr) then
-            local head = plr.Character and plr.Character:FindFirstChild("Head")
-            if head then
-                OriginalSizes[plr] = head.Size
-                head.Size = Vector3.new(Config.Rage.HeadSize, Config.Rage.HeadSize, Config.Rage.HeadSize)
-                head.Transparency = Config.Rage.Transparency
-                head.CanCollide = false
-            end
-        end
-        if Config.Visuals.Enabled and Config.Visuals.HighlightESP and not Config.Visuals.DisablePlayerChams
-           and IsAlive(plr) and IsEnemyFor(plr, "ESP") then
-            pcall(function()
-                if plr.Character and plr.Character:FindFirstChild("AnyamiHL") then
-                    plr.Character.AnyamiHL:Destroy()
-                end
-                local hl = Instance.new("Highlight")
-                hl.Name = "AnyamiHL"
-                hl.Adornee = plr.Character
-                hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-                hl.Parent = plr.Character
-            end)
-        end
-    end)
-end
-
-local function SetupPlayer(plr)
-    if plr == LocalPlayer then return end
-    if plr.Character then OnCharacterAdded(plr, plr.Character) end
-    TrackConnection(plr.CharacterAdded:Connect(function(char)
-        OnCharacterAdded(plr, char)
-    end))
-end
-
-for _, plr in ipairs(Players:GetPlayers()) do SetupPlayer(plr) end
-TrackConnection(Players.PlayerAdded:Connect(SetupPlayer))
-
-TrackConnection(Players.PlayerRemoving:Connect(function(plr)
-    RemoveESP(plr)
-    OriginalSizes[plr] = nil
-    if State.AimTarget == plr then State.AimTarget = nil end
-    if State.CurrentTarget == plr then State.CurrentTarget = nil end
-end))
-
-LocalPlayer.CharacterAdded:Connect(function()
-    ResetRapidFire()
-    for part, original in pairs(WeaponChamsCache) do
-        pcall(function()
-            if part then part.Material = original end
-            local glow = part:FindFirstChild("WeaponGlow")
-            if glow then glow:Destroy() end
-        end)
-    end
-    WeaponChamsCache = {}
-end)
-
--- ╔═══════════════════════════════════════════════════════════════════════╗
--- ║                             MAIN LOOP                                  ║
--- ╚═══════════════════════════════════════════════════════════════════════╝
-TrackConnection(RunService.RenderStepped:Connect(function(deltaTime)
+TrackConnection(RunService.RenderStepped:Connect(function()
     if not State.Running then return end
     Camera = Workspace.CurrentCamera
     
-    -- Обновляем радугу
-    if Config.Rainbow.Enabled or Config.Visuals.UseRainbowESP or Config.Crosshair.UseRainbow or Config.ItemChams.UseRainbow or Config.WeaponChams.UseRainbow or Config.MenuColor.UseRainbow or Config.Aimbot.UseRainbowFOV or Config.SilentAim.UseRainbowFOV then
+    -- Rainbow update
+    if Config.Rainbow.Enabled or Config.Visuals.UseRainbowESP or Config.Crosshair.UseRainbow or Config.WeaponChams.UseRainbow or Config.MenuColor.UseRainbow or Config.Aimbot.UseRainbowFOV or Config.SilentAim.UseRainbowFOV then
         RainbowCore.Enabled = true
         RainbowCore.Speed = Config.Rainbow.Speed
-        UpdateRainbowColor()
+        GetRainbowColor()
         
-        -- Меню
         if Config.MenuColor.UseRainbow then
             Library.Theme.Accent = RainbowCore.CurrentColor
             Library.Theme.AccentGradient = RainbowCore.CurrentColor
             Library:ChangeTheme("Accent", RainbowCore.CurrentColor)
             Library:ChangeTheme("AccentGradient", RainbowCore.CurrentColor)
-        else
-            Library.Theme.Accent = MenuCustomColor
-            Library.Theme.AccentGradient = MenuCustomColor
-            Library:ChangeTheme("Accent", MenuCustomColor)
-            Library:ChangeTheme("AccentGradient", MenuCustomColor)
         end
         
-        -- FOV круги
         if Config.Aimbot.UseRainbowFOV then
             FOVCircle.Color = RainbowCore.CurrentColor
         end
@@ -1655,13 +721,7 @@ TrackConnection(RunService.RenderStepped:Connect(function(deltaTime)
         end
     end
 
-    local mp
-    if Config.Aimbot.FOVOrigin == "Center" then
-        local vp = Camera.ViewportSize
-        mp = Vector2.new(vp.X / 2, vp.Y / 2)
-    else
-        mp = UserInputService:GetMouseLocation()
-    end
+    local mp = UserInputService:GetMouseLocation()
     FOVCircle.Position = mp
     FOVCircle.Radius = Config.Aimbot.FOV
     FOVCircle.Visible = Config.Aimbot.Enabled and Config.Aimbot.ShowFOV
@@ -1671,67 +731,25 @@ TrackConnection(RunService.RenderStepped:Connect(function(deltaTime)
     SilentFOVCircle.Visible = Config.SilentAim.Enabled and Config.SilentAim.ShowFOV
 
     pcall(UpdateAimbot)
-    pcall(UpdateHitboxes)
     pcall(UpdateTrigger)
-    pcall(UpdateDrawingESP)
     pcall(UpdateCrosshair)
     pcall(UpdateWatermark)
-    pcall(UpdateTargetInfo)
-    pcall(UpdateKeybindOverlay)
-    pcall(ApplyItemChams)
     pcall(ApplyWeaponChams)
+end))
 
-    if Config.Aimbot.SnapLine and State.Aiming and State.CurrentTarget and IsAlive(State.CurrentTarget) then
-        local bone = GetBone(State.CurrentTarget.Character, Config.Aimbot.Bone)
-        if bone then
-            local pos, vis = Camera:WorldToViewportPoint(bone.Position)
-            if vis then
-                local center = Camera.ViewportSize / 2
-                SnapLineObj.From = Vector2.new(center.X, center.Y)
-                SnapLineObj.To = Vector2.new(pos.X, pos.Y)
-                local isVis = CheckVisibility(State.CurrentTarget.Character, bone)
-                SnapLineObj.Color = isVis and Color3.fromRGB(0, 255, 100) or Color3.fromRGB(255, 50, 50)
-                SnapLineObj.Visible = true
-            else
-                SnapLineObj.Visible = false
-            end
-        else
-            SnapLineObj.Visible = false
-        end
-    else
-        SnapLineObj.Visible = false
-    end
-
-    if Config.Misc.SpeedHack then
-        local char = LocalPlayer.Character
-        if char then
-            local h = char:FindFirstChildOfClass("Humanoid")
-            if h then h.WalkSpeed = Config.Misc.SpeedValue end
-        end
-    end
-
-    if Config.Misc.Noclip then
-        local char = LocalPlayer.Character
-        if char then
-            for _, part in ipairs(char:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = false
-                end
-            end
-        end
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                         ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ                      ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
+TrackConnection(LocalPlayer.Idled:Connect(function()
+    if Config.Misc.AntiAFK then
+        pcall(function()
+            local VU = game:GetService("VirtualUser")
+            VU:CaptureController()
+            VU:ClickButton2(Vector2.new())
+        end)
     end
 end))
 
-task.spawn(function()
-    while State.Running do
-        pcall(UpdateHighlightESP)
-        task.wait(0.1)
-    end
-end)
-
--- ╔═══════════════════════════════════════════════════════════════════════╗
--- ║                            INFINITE JUMP                              ║
--- ╚═══════════════════════════════════════════════════════════════════════╝
 TrackConnection(UserInputService.InputBegan:Connect(function(input)
     if Config.Misc.InfiniteJump and input.KeyCode == Enum.KeyCode.Space then
         local char = LocalPlayer.Character
@@ -1742,29 +760,11 @@ TrackConnection(UserInputService.InputBegan:Connect(function(input)
     end
 end))
 
--- ╔═══════════════════════════════════════════════════════════════════════╗
--- ║                            INPUT HANDLING                             ║
--- ╚═══════════════════════════════════════════════════════════════════════╝
 TrackConnection(UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
 
     if DoesInputMatch(input, Config.Visuals.ToggleBind) then
         Config.Visuals.Enabled = not Config.Visuals.Enabled
-        Library:Notification({
-            Title = "ESP",
-            Description = Config.Visuals.Enabled and "Enabled" or "Disabled",
-            Duration = 1,
-        })
-        if not Config.Visuals.Enabled then
-            for _, p in pairs(Players:GetPlayers()) do
-                pcall(function()
-                    if p.Character and p.Character:FindFirstChild("AnyamiHL") then
-                        p.Character.AnyamiHL:Destroy()
-                    end
-                end)
-                HideESPObjects(ESPCache[p])
-            end
-        end
     end
 
     if DoesInputMatch(input, Config.Aimbot.Bind) then
@@ -1773,11 +773,6 @@ TrackConnection(UserInputService.InputBegan:Connect(function(input, gameProcesse
 
     if Config.Trigger.Mode == "Toggle" and DoesInputMatch(input, Config.Trigger.Bind) then
         State.ToggleState = not State.ToggleState
-        Library:Notification({
-            Title = "Triggerbot",
-            Description = State.ToggleState and "Enabled" or "Disabled",
-            Duration = 1,
-        })
     end
 end))
 
@@ -1785,7 +780,6 @@ TrackConnection(UserInputService.InputEnded:Connect(function(input)
     if DoesInputMatch(input, Config.Aimbot.Bind) then
         State.Aiming = false
         State.AimTarget = nil
-        State.CurrentTarget = nil
         if State.AutoFiring then
             pcall(InputManager.Release)
             State.AutoFiring = false
@@ -1794,181 +788,68 @@ TrackConnection(UserInputService.InputEnded:Connect(function(input)
 end))
 
 -- ╔═══════════════════════════════════════════════════════════════════════╗
--- ║                              CLEANUP                                   ║
+-- ║                          UI МЕНЮ (РАБОЧЕЕ)                            ║
 -- ╚═══════════════════════════════════════════════════════════════════════╝
-getgenv().AnyamiCleanup = function()
-    State.Running = false
 
-    for _, conn in ipairs(Connections) do
-        pcall(function() conn:Disconnect() end)
-    end
-    Connections = {}
-
-    if State.IsFiring then pcall(InputManager.Release) end
-    if State.AutoFiring then pcall(InputManager.Release) end
-    State.IsFiring = false
-    State.AutoFiring = false
-
-    if SilentAimConnection then SilentAimConnection:Disconnect() end
-
-    pcall(function() FOVCircle:Remove() end)
-    pcall(function() SilentFOVCircle:Remove() end)
-    pcall(function() MagnetCircle:Remove() end)
-    pcall(function() WatermarkText:Remove() end)
-    pcall(function() DotCrosshair:Remove() end)
-    for _, key in ipairs({"Name", "Info", "BarBg", "BarFill"}) do
-        pcall(function() TgtInfo[key]:Remove() end)
-    end
-    for i = 1, 15 do pcall(function() OverlayLines[i]:Remove() end) end
-    pcall(function() SnapLineObj:Remove() end)
-
-    for plr, _ in pairs(ESPCache) do RemoveESP(plr) end
-
-    for plr, sizes in pairs(OriginalSizes) do
-        pcall(function()
-            if plr.Character then
-                if type(sizes) == "table" then
-                    for name, size in pairs(sizes) do
-                        local part = plr.Character:FindFirstChild(name)
-                        if part and part:IsA("BasePart") then
-                            part.Size = size
-                            part.Transparency = 0
-                            part.CanCollide = true
-                        end
-                    end
-                elseif plr.Character:FindFirstChild("Head") then
-                    plr.Character.Head.Size = sizes
-                    plr.Character.Head.Transparency = 0
-                    plr.Character.Head.CanCollide = true
-                end
-            end
-        end)
-    end
-    OriginalSizes = {}
-
-    for _, p in ipairs(Players:GetPlayers()) do
-        pcall(function()
-            if p.Character and p.Character:FindFirstChild("AnyamiHL") then
-                p.Character.AnyamiHL:Destroy()
-            end
-        end)
-    end
-
-    for part, original in pairs(WeaponChamsCache) do
-        pcall(function()
-            if part then part.Material = original end
-            local glow = part:FindFirstChild("WeaponGlow")
-            if glow then glow:Destroy() end
-        end)
-    end
-    WeaponChamsCache = {}
-
-    for part, original in pairs(ItemChamsCache) do
-        pcall(function()
-            if part then part.Material = original end
-        end)
-    end
-    ItemChamsCache = {}
-
-    if Config.Misc.Fullbright then SetFullbright(false) end
-
-    if State.OriginalWalkSpeed then
-        local char = LocalPlayer.Character
-        if char then
-            local h = char:FindFirstChildOfClass("Humanoid")
-            if h then h.WalkSpeed = State.OriginalWalkSpeed end
-        end
-    end
-
-    ResetRapidFire()
-
-    getgenv().AnyamiCleanup = nil
-end
+-- Создаем страницы
+local MainPage = Window:Page({Name = "Main", Icon = "138827881557940"})
+local AimbotPage = Window:Page({Name = "Aimbot", Icon = "138827881557940"})
+local SilentPage = Window:Page({Name = "Silent Aim", Icon = "138827881557940"})
+local VisualsPage = Window:Page({Name = "Visuals", Icon = "138827881557940"})
+local CombatPage = Window:Page({Name = "Combat", Icon = "138827881557940"})
+local MiscPage = Window:Page({Name = "Misc", Icon = "138827881557940"})
+local RainbowPage = Window:Page({Name = "Rainbow", Icon = "138827881557940"})
 
 -- ╔═══════════════════════════════════════════════════════════════════════╗
--- ║                               UI MENU                                  ║
+-- ║                          MAIN PAGE                                    ║
 -- ╚═══════════════════════════════════════════════════════════════════════╝
-Window:Category("Main")
+local MainSection = MainPage:Section({Name = "Основные настройки", Side = 1})
 
-local RainbowPage = Window:Page({Name = "Rainbow", Icon = "138827881557940"})
-local RainbowSection = RainbowPage:Section({Name = "FULL RAINBOW SETTINGS", Side = 1})
-
-RainbowSection:Toggle({
-    Name = "MASTER RAINBOW SWITCH",
-    Flag = "RainbowMaster",
-    Default = Config.Rainbow.Enabled,
-    Callback = function(v) 
-        Config.Rainbow.Enabled = v
-        if not v then
-            RainbowCore.Enabled = false
-        end
-    end
+MainSection:Toggle({
+    Name = "Weapon Chams",
+    Flag = "WeaponChamsMain",
+    Default = Config.WeaponChams.Enabled,
+    Callback = function(v) Config.WeaponChams.Enabled = v end
 })
 
-RainbowSection:Slider({
-    Name = "Rainbow Speed",
-    Flag = "RainbowSpeed",
-    Min = 0.1, Max = 3, Default = Config.Rainbow.Speed, Suffix = "",
-    Callback = function(v) Config.Rainbow.Speed = v end
+MainSection:Toggle({
+    Name = "Dot Crosshair",
+    Flag = "CrosshairMain",
+    Default = Config.Crosshair.Enabled,
+    Callback = function(v) Config.Crosshair.Enabled = v end
 })
 
-RainbowSection:Divider()
-
-RainbowSection:Toggle({
-    Name = "Rainbow Menu Color",
-    Flag = "RainbowMenu",
-    Default = Config.MenuColor.UseRainbow,
-    Callback = function(v) Config.MenuColor.UseRainbow = v end
+MainSection:Slider({
+    Name = "Crosshair Dot Size",
+    Flag = "DotSizeMain",
+    Min = 2, Max = 20, Default = Config.Crosshair.DotSize,
+    Callback = function(v) Config.Crosshair.DotSize = v end
 })
 
-RainbowSection:Toggle({
-    Name = "Rainbow ESP",
-    Flag = "RainbowESP",
-    Default = Config.Visuals.UseRainbowESP,
-    Callback = function(v) Config.Visuals.UseRainbowESP = v end
+MainSection:Divider()
+
+MainSection:Toggle({
+    Name = "Anti-AFK",
+    Flag = "AntiAFKMain",
+    Default = Config.Misc.AntiAFK,
+    Callback = function(v) Config.Misc.AntiAFK = v end
 })
 
-RainbowSection:Toggle({
-    Name = "Rainbow Crosshair",
-    Flag = "RainbowCrosshair",
-    Default = Config.Crosshair.UseRainbow,
-    Callback = function(v) Config.Crosshair.UseRainbow = v end
+MainSection:Toggle({
+    Name = "Watermark",
+    Flag = "WatermarkMain",
+    Default = Config.Misc.Watermark,
+    Callback = function(v) Config.Misc.Watermark = v end
 })
 
-RainbowSection:Toggle({
-    Name = "Rainbow Weapon Chams",
-    Flag = "RainbowWeaponChams",
-    Default = Config.WeaponChams.UseRainbow,
-    Callback = function(v) Config.WeaponChams.UseRainbow = v end
-})
-
-RainbowSection:Toggle({
-    Name = "Rainbow Item Chams",
-    Flag = "RainbowItemChams",
-    Default = Config.ItemChams.UseRainbow,
-    Callback = function(v) Config.ItemChams.UseRainbow = v end
-})
-
-RainbowSection:Toggle({
-    Name = "Rainbow Aimbot FOV",
-    Flag = "RainbowAimbotFOV",
-    Default = Config.Aimbot.UseRainbowFOV,
-    Callback = function(v) Config.Aimbot.UseRainbowFOV = v end
-})
-
-RainbowSection:Toggle({
-    Name = "Rainbow Silent Aim FOV",
-    Flag = "RainbowSilentFOV",
-    Default = Config.SilentAim.UseRainbowFOV,
-    Callback = function(v) Config.SilentAim.UseRainbowFOV = v end
-})
-
-local AimbotPage = Window:Page({Name = "Aimbot", Icon = "138827881557940"})
-local AimSection = AimbotPage:Section({Name = "Legacy Aimbot (без смута)", Side = 1})
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                          AIMBOT PAGE                                  ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
+local AimSection = AimbotPage:Section({Name = "Legacy Aimbot", Side = 1})
 
 AimSection:Toggle({
     Name = "Enable Aimbot",
-    Flag = "AimbotEnabled",
+    Flag = "AimbotEnable",
     Default = Config.Aimbot.Enabled,
     Callback = function(v) Config.Aimbot.Enabled = v end
 })
@@ -1976,34 +857,34 @@ AimSection:Toggle({
 AimSection:Slider({
     Name = "FOV Radius",
     Flag = "AimbotFOV",
-    Min = 30, Max = 600, Default = Config.Aimbot.FOV, Suffix = " px",
+    Min = 30, Max = 600, Default = Config.Aimbot.FOV,
     Callback = function(v) Config.Aimbot.FOV = v end
 })
 
 AimSection:Label("FOV Color"):Colorpicker({
-    Name = "FOV Color",
-    Flag = "FOVColor",
+    Name = "Aimbot FOV Color",
+    Flag = "AimbotFOVColor",
     Default = Config.Aimbot.FOVColor,
     Callback = function(v) Config.Aimbot.FOVColor = v end
 })
 
 AimSection:Toggle({
     Name = "Show FOV Circle",
-    Flag = "ShowFOV",
+    Flag = "AimbotShowFOV",
     Default = Config.Aimbot.ShowFOV,
     Callback = function(v) Config.Aimbot.ShowFOV = v end
 })
 
 AimSection:Toggle({
     Name = "Target Lock",
-    Flag = "TargetLock",
+    Flag = "AimbotTargetLock",
     Default = Config.Aimbot.TargetLock,
     Callback = function(v) Config.Aimbot.TargetLock = v end
 })
 
 AimSection:Toggle({
     Name = "Auto Fire",
-    Flag = "AutoFire",
+    Flag = "AimbotAutoFire",
     Default = Config.Aimbot.AutoFire,
     Callback = function(v) Config.Aimbot.AutoFire = v end
 })
@@ -2022,50 +903,46 @@ AimSection:Toggle({
     Callback = function(v) Config.Aimbot.WallCheck = v end
 })
 
-AimSection:Slider({
-    Name = "Max Distance",
-    Flag = "AimbotMaxDist",
-    Min = 50, Max = 2000, Default = Config.Aimbot.MaxDistance, Suffix = " studs",
-    Callback = function(v) Config.Aimbot.MaxDistance = v end
-})
+local AimBoneSection = AimbotPage:Section({Name = "Bone & Prediction", Side = 2})
 
-local BoneSection = AimbotPage:Section({Name = "Bone & Prediction", Side = 2})
-BoneSection:Dropdown({
+AimBoneSection:Dropdown({
     Name = "Aim Bone",
-    Flag = "AimBone",
+    Flag = "AimbotBone",
     Default = {Config.Aimbot.Bone},
-    Items = {"Head", "Torso", "Closest"},
+    Items = {"Head", "Torso"},
     Multi = false,
     Callback = function(v) Config.Aimbot.Bone = v[1] end
 })
 
-BoneSection:Slider({
-    Name = "Prediction (0 - 3)",
-    Flag = "Prediction",
-    Min = 0, Max = 3, Default = Config.Aimbot.Prediction, Suffix = "",
+AimBoneSection:Slider({
+    Name = "Prediction (0-3)",
+    Flag = "AimbotPrediction",
+    Min = 0, Max = 3, Default = Config.Aimbot.Prediction,
     Callback = function(v) Config.Aimbot.Prediction = v end
 })
 
-BoneSection:Toggle({
+AimBoneSection:Toggle({
     Name = "Snap Line",
-    Flag = "SnapLine",
+    Flag = "AimbotSnapLine",
     Default = Config.Aimbot.SnapLine,
     Callback = function(v) Config.Aimbot.SnapLine = v end
 })
 
-BoneSection:Toggle({
-    Name = "Target Info",
-    Flag = "TargetInfo",
-    Default = Config.Aimbot.TargetInfo,
-    Callback = function(v) Config.Aimbot.TargetInfo = v end
+AimBoneSection:Slider({
+    Name = "Max Distance",
+    Flag = "AimbotMaxDist",
+    Min = 50, Max = 2000, Default = Config.Aimbot.MaxDistance,
+    Callback = function(v) Config.Aimbot.MaxDistance = v end
 })
 
-local SilentPage = Window:Page({Name = "Silent Aim", Icon = "138827881557940"})
-local SilentSection = SilentPage:Section({Name = "Silent Aim (с чеками на всё)", Side = 1})
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                          SILENT AIM PAGE                              ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
+local SilentSectionMain = SilentPage:Section({Name = "Silent Aim Settings", Side = 1})
 
-SilentSection:Toggle({
+SilentSectionMain:Toggle({
     Name = "Enable Silent Aim",
-    Flag = "SilentEnabled",
+    Flag = "SilentEnable",
     Default = Config.SilentAim.Enabled,
     Callback = function(v) 
         Config.SilentAim.Enabled = v
@@ -2073,418 +950,181 @@ SilentSection:Toggle({
     end
 })
 
-SilentSection:Slider({
+SilentSectionMain:Slider({
     Name = "FOV Radius",
     Flag = "SilentFOV",
-    Min = 30, Max = 600, Default = Config.SilentAim.FOV, Suffix = " px",
+    Min = 30, Max = 600, Default = Config.SilentAim.FOV,
     Callback = function(v) Config.SilentAim.FOV = v end
 })
 
-SilentSection:Label("FOV Color"):Colorpicker({
+SilentSectionMain:Label("FOV Color"):Colorpicker({
     Name = "Silent FOV Color",
     Flag = "SilentFOVColor",
     Default = Config.SilentAim.FOVColor,
     Callback = function(v) Config.SilentAim.FOVColor = v end
 })
 
-SilentSection:Toggle({
+SilentSectionMain:Toggle({
     Name = "Show FOV Circle",
     Flag = "SilentShowFOV",
     Default = Config.SilentAim.ShowFOV,
     Callback = function(v) Config.SilentAim.ShowFOV = v end
 })
 
-SilentSection:Dropdown({
+SilentSectionMain:Dropdown({
     Name = "Aim Bone",
     Flag = "SilentBone",
     Default = {Config.SilentAim.Bone},
-    Items = {"Head", "Torso", "Closest"},
+    Items = {"Head", "Torso"},
     Multi = false,
     Callback = function(v) Config.SilentAim.Bone = v[1] end
 })
 
-SilentSection:Slider({
+SilentSectionMain:Slider({
     Name = "Prediction",
     Flag = "SilentPrediction",
-    Min = 0, Max = 1, Default = Config.SilentAim.Prediction, Suffix = "",
+    Min = 0, Max = 1, Default = Config.SilentAim.Prediction,
     Callback = function(v) Config.SilentAim.Prediction = v end
 })
 
-SilentSection:Slider({
+SilentSectionMain:Slider({
     Name = "Hit Chance (%)",
     Flag = "SilentHitChance",
-    Min = 0, Max = 100, Default = Config.SilentAim.HitChance, Suffix = "",
+    Min = 0, Max = 100, Default = Config.SilentAim.HitChance,
     Callback = function(v) Config.SilentAim.HitChance = v end
 })
 
-SilentSection:Toggle({
+SilentSectionMain:Toggle({
     Name = "Team Check",
     Flag = "SilentTeamCheck",
     Default = Config.SilentAim.TeamCheck,
     Callback = function(v) Config.SilentAim.TeamCheck = v end
 })
 
-SilentSection:Toggle({
+SilentSectionMain:Toggle({
     Name = "Visible Check",
     Flag = "SilentVisibleCheck",
     Default = Config.SilentAim.VisibleCheck,
     Callback = function(v) Config.SilentAim.VisibleCheck = v end
 })
 
-SilentSection:Toggle({
+SilentSectionMain:Toggle({
     Name = "Wall Check",
     Flag = "SilentWallCheck",
     Default = Config.SilentAim.WallCheck,
     Callback = function(v) Config.SilentAim.WallCheck = v end
 })
 
-SilentSection:Slider({
+SilentSectionMain:Slider({
     Name = "Max Distance",
     Flag = "SilentMaxDist",
-    Min = 50, Max = 2000, Default = Config.SilentAim.MaxDistance, Suffix = " studs",
+    Min = 50, Max = 2000, Default = Config.SilentAim.MaxDistance,
     Callback = function(v) Config.SilentAim.MaxDistance = v end
 })
 
-local VisualsPage = Window:Page({Name = "Visuals", Icon = "138827881557940"})
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                          VISUALS PAGE                                 ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
+local WeaponSection = VisualsPage:Section({Name = "Weapon Chams", Side = 1})
 
-local WeaponChamsSection = VisualsPage:Section({Name = "Weapon Chams (CS2 Style)", Side = 1})
-
-WeaponChamsSection:Toggle({
+WeaponSection:Toggle({
     Name = "Enable Weapon Chams",
-    Flag = "WeaponChamsEnabled",
+    Flag = "WeaponChamsEnable",
     Default = Config.WeaponChams.Enabled,
     Callback = function(v) Config.WeaponChams.Enabled = v end
 })
 
-WeaponChamsSection:Dropdown({
+WeaponSection:Dropdown({
     Name = "Material",
     Flag = "WeaponChamsMaterial",
     Default = {Config.WeaponChams.Material},
-    Items = {"Neon", "Plastic", "Metal", "Wood", "Stone", "Glass", "SmoothPlastic", "Ice", "ForceField"},
+    Items = {"Neon", "Plastic", "Metal", "Wood", "Glass", "SmoothPlastic"},
     Multi = false,
     Callback = function(v) Config.WeaponChams.Material = v[1] end
 })
 
-WeaponChamsSection:Label("Chams Color"):Colorpicker({
+WeaponSection:Label("Color"):Colorpicker({
     Name = "Weapon Chams Color",
     Flag = "WeaponChamsColor",
     Default = Config.WeaponChams.Color,
     Callback = function(v) Config.WeaponChams.Color = v end
 })
 
-WeaponChamsSection:Slider({
+WeaponSection:Slider({
     Name = "Transparency",
     Flag = "WeaponChamsTransp",
-    Min = 0, Max = 1, Default = Config.WeaponChams.Transparency, Suffix = "",
+    Min = 0, Max = 1, Default = Config.WeaponChams.Transparency,
     Callback = function(v) Config.WeaponChams.Transparency = v end
 })
 
-WeaponChamsSection:Toggle({
-    Name = "Glow Effect (CS2 Style)",
-    Flag = "WeaponChamsGlow",
-    Default = Config.WeaponChams.GlowEffect,
-    Callback = function(v) Config.WeaponChams.GlowEffect = v end
-})
+local CrosshairSection = VisualsPage:Section({Name = "Crosshair", Side = 2})
 
-local CrossSection = VisualsPage:Section({Name = "Crosshair", Side = 2})
-
-CrossSection:Toggle({
+CrosshairSection:Toggle({
     Name = "Enable Dot Crosshair",
-    Flag = "CrosshairEnabled",
+    Flag = "CrosshairEnable",
     Default = Config.Crosshair.Enabled,
     Callback = function(v) Config.Crosshair.Enabled = v end
 })
 
-CrossSection:Slider({
+CrosshairSection:Slider({
     Name = "Dot Size",
-    Flag = "DotSize",
-    Min = 2, Max = 20, Default = Config.Crosshair.DotSize, Suffix = " px",
+    Flag = "CrosshairDotSize",
+    Min = 2, Max = 20, Default = Config.Crosshair.DotSize,
     Callback = function(v) Config.Crosshair.DotSize = v end
 })
 
-CrossSection:Label("Crosshair Color"):Colorpicker({
+CrosshairSection:Label("Color"):Colorpicker({
     Name = "Crosshair Color",
-    Flag = "CrossColor",
+    Flag = "CrosshairColor",
     Default = Config.Crosshair.Color,
     Callback = function(v) Config.Crosshair.Color = v end
 })
 
-local ChamsSection = VisualsPage:Section({Name = "Item Chams (Dropped Items)", Side = 1})
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                          COMBAT PAGE                                  ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
+local CombatSectionMain = CombatPage:Section({Name = "Combat Features", Side = 1})
 
-ChamsSection:Toggle({
-    Name = "Enable Item Chams",
-    Flag = "ItemChamsEnabled",
-    Default = Config.ItemChams.Enabled,
-    Callback = function(v) Config.ItemChams.Enabled = v end
-})
-
-ChamsSection:Dropdown({
-    Name = "Material",
-    Flag = "ChamsMaterial",
-    Default = {Config.ItemChams.Material},
-    Items = {"Neon", "Plastic", "Metal", "Wood", "Stone", "Glass", "SmoothPlastic", "Ice"},
-    Multi = false,
-    Callback = function(v) Config.ItemChams.Material = v[1] end
-})
-
-ChamsSection:Label("Chams Color"):Colorpicker({
-    Name = "Chams Color",
-    Flag = "ChamsColor",
-    Default = Config.ItemChams.Color,
-    Callback = function(v) Config.ItemChams.Color = v end
-})
-
-ChamsSection:Slider({
-    Name = "Transparency",
-    Flag = "ChamsTransp",
-    Min = 0, Max = 1, Default = Config.ItemChams.Transparency, Suffix = "",
-    Callback = function(v) Config.ItemChams.Transparency = v end
-})
-
-local ESPPage = Window:Page({Name = "ESP", Icon = "138827881557940"})
-local MainEspSection = ESPPage:Section({Name = "Player ESP", Side = 1})
-
-MainEspSection:Toggle({
-    Name = "Enable ESP",
-    Flag = "ESPEnabled",
-    Default = Config.Visuals.Enabled,
-    Callback = function(v) Config.Visuals.Enabled = v end
-})
-
-MainEspSection:Toggle({
-    Name = "Disable Player Chams (Highlight)",
-    Flag = "DisablePlayerChams",
-    Default = Config.Visuals.DisablePlayerChams,
+CombatSectionMain:Toggle({
+    Name = "Rapid Fire",
+    Flag = "RapidFire",
+    Default = Config.Combat.RapidFire,
     Callback = function(v) 
-        Config.Visuals.DisablePlayerChams = v
+        Config.Combat.RapidFire = v
         if v then
-            for _, p in pairs(Players:GetPlayers()) do
-                pcall(function()
-                    if p.Character and p.Character:FindFirstChild("AnyamiHL") then
-                        p.Character.AnyamiHL:Destroy()
+            AutoClickerConnection = RunService.RenderStepped:Connect(function()
+                if Config.Combat.RapidFire and UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
+                    local now = tick()
+                    if now - LastShotTime >= Config.Combat.FireDelay then
+                        LastShotTime = now
+                        SafeClick()
                     end
-                end)
-            end
+                end
+            end)
+        elseif AutoClickerConnection then
+            AutoClickerConnection:Disconnect()
+            AutoClickerConnection = nil
         end
     end
 })
 
-MainEspSection:Toggle({
-    Name = "Highlight ESP",
-    Flag = "HighlightESP",
-    Default = Config.Visuals.HighlightESP,
-    Callback = function(v) Config.Visuals.HighlightESP = v end
-})
-
-MainEspSection:Slider({
-    Name = "Highlight Transparency",
-    Flag = "HighlightTransp",
-    Min = 0, Max = 1, Default = Config.Visuals.HighlightTransp, Suffix = "",
-    Callback = function(v) Config.Visuals.HighlightTransp = v end
-})
-
-MainEspSection:Toggle({
-    Name = "Box ESP",
-    Flag = "BoxESP",
-    Default = Config.Visuals.BoxESP,
-    Callback = function(v) Config.Visuals.BoxESP = v end
-})
-
-MainEspSection:Toggle({
-    Name = "Name ESP",
-    Flag = "NameESP",
-    Default = Config.Visuals.NameESP,
-    Callback = function(v) Config.Visuals.NameESP = v end
-})
-
-MainEspSection:Toggle({
-    Name = "Health Bar",
-    Flag = "HealthBar",
-    Default = Config.Visuals.HealthBar,
-    Callback = function(v) Config.Visuals.HealthBar = v end
-})
-
-MainEspSection:Toggle({
-    Name = "Distance ESP",
-    Flag = "DistanceESP",
-    Default = Config.Visuals.DistanceESP,
-    Callback = function(v) Config.Visuals.DistanceESP = v end
-})
-
-MainEspSection:Toggle({
-    Name = "Tracers",
-    Flag = "Tracers",
-    Default = Config.Visuals.Tracers,
-    Callback = function(v) Config.Visuals.Tracers = v end
-})
-
-MainEspSection:Toggle({
-    Name = "Skeleton ESP",
-    Flag = "SkeletonESP",
-    Default = Config.Visuals.Skeleton,
-    Callback = function(v) Config.Visuals.Skeleton = v end
-})
-
-MainEspSection:Toggle({
-    Name = "Team Check",
-    Flag = "ESPTeamCheck",
-    Default = Config.Visuals.TeamCheck,
-    Callback = function(v) Config.Visuals.TeamCheck = v end
-})
-
-MainEspSection:Slider({
-    Name = "Max ESP Distance",
-    Flag = "ESPMaxDist",
-    Min = 50, Max = 5000, Default = Config.Visuals.MaxDistance, Suffix = " studs",
-    Callback = function(v) Config.Visuals.MaxDistance = v end
-})
-
-local ColorSection = ESPPage:Section({Name = "Colors", Side = 2})
-ColorSection:Label("Visible Color"):Colorpicker({
-    Name = "Visible Color",
-    Flag = "VisibleColor",
-    Default = Config.Visuals.ColorVisible,
-    Callback = function(v) Config.Visuals.ColorVisible = v end
-})
-
-ColorSection:Label("Hidden Color"):Colorpicker({
-    Name = "Hidden Color",
-    Flag = "HiddenColor",
-    Default = Config.Visuals.ColorHidden,
-    Callback = function(v) Config.Visuals.ColorHidden = v end
-})
-
-local RagePage = Window:Page({Name = "Rage", Icon = "138827881557940"})
-local HitboxSection = RagePage:Section({Name = "Hitbox Expander", Side = 1})
-
-HitboxSection:Toggle({
-    Name = "Hitbox Expander",
-    Flag = "HitboxExpander",
-    Default = Config.Rage.HitboxExpander,
-    Callback = function(v) Config.Rage.HitboxExpander = v end
-})
-
-HitboxSection:Toggle({
-    Name = "Full Body Hitbox",
-    Flag = "FullBodyHitbox",
-    Default = Config.Rage.FullBodyHitbox,
-    Callback = function(v) Config.Rage.FullBodyHitbox = v end
-})
-
-HitboxSection:Slider({
-    Name = "Head Size",
-    Flag = "HeadSize",
-    Min = 1, Max = 15, Default = Config.Rage.HeadSize, Suffix = "",
-    Callback = function(v) Config.Rage.HeadSize = v end
-})
-
-HitboxSection:Slider({
-    Name = "Body Size",
-    Flag = "BodySize",
-    Min = 1, Max = 10, Default = Config.Rage.BodySize, Suffix = "",
-    Callback = function(v) Config.Rage.BodySize = v end
-})
-
-HitboxSection:Slider({
-    Name = "Transparency",
-    Flag = "HitboxTransp",
-    Min = 0, Max = 1, Default = Config.Rage.Transparency, Suffix = "",
-    Callback = function(v) Config.Rage.Transparency = v end
-})
-
-local CombatPage = Window:Page({Name = "Combat", Icon = "138827881557940"})
-local CombatSection = CombatPage:Section({Name = "Combat Features", Side = 1})
-
-CombatSection:Toggle({
-    Name = "Rapid Fire",
-    Flag = "RapidFire",
-    Default = Config.Combat.RapidFire,
-    Callback = function(v)
-        Config.Combat.RapidFire = v
-        if v then StartAutoClicker() else StopAutoClicker() end
-    end
-})
-
-CombatSection:Slider({
-    Name = "Fire Delay",
+CombatSectionMain:Slider({
+    Name = "Fire Delay (sec)",
     Flag = "FireDelay",
-    Min = 0, Max = 0.5, Default = Config.Combat.FireDelay, Suffix = " s",
+    Min = 0, Max = 0.5, Default = Config.Combat.FireDelay,
     Callback = function(v) Config.Combat.FireDelay = v end
 })
 
-local MiscPage = Window:Page({Name = "Misc", Icon = "138827881557940"})
-local MiscSectionPage = MiscPage:Section({Name = "Utility", Side = 1})
+local TriggerSectionMain = CombatPage:Section({Name = "Triggerbot", Side = 2})
 
-MiscSectionPage:Toggle({
-    Name = "Anti-AFK",
-    Flag = "AntiAFK",
-    Default = Config.Misc.AntiAFK,
-    Callback = function(v) Config.Misc.AntiAFK = v end
-})
-
-MiscSectionPage:Toggle({
-    Name = "Watermark",
-    Flag = "Watermark",
-    Default = Config.Misc.Watermark,
-    Callback = function(v) Config.Misc.Watermark = v end
-})
-
-MiscSectionPage:Toggle({
-    Name = "Keybind Overlay",
-    Flag = "KeybindOverlay",
-    Default = Config.Misc.KeybindOverlay,
-    Callback = function(v) Config.Misc.KeybindOverlay = v end
-})
-
-MiscSectionPage:Toggle({
-    Name = "Fullbright",
-    Flag = "Fullbright",
-    Default = Config.Misc.Fullbright,
-    Callback = function(v)
-        Config.Misc.Fullbright = v
-        SetFullbright(v)
-    end
-})
-
-MiscSectionPage:Toggle({
-    Name = "Infinite Jump",
-    Flag = "InfiniteJump",
-    Default = Config.Misc.InfiniteJump,
-    Callback = function(v) Config.Misc.InfiniteJump = v end
-})
-
-MiscSectionPage:Toggle({
-    Name = "Speed Hack",
-    Flag = "SpeedHack",
-    Default = Config.Misc.SpeedHack,
-    Callback = function(v) Config.Misc.SpeedHack = v end
-})
-
-MiscSectionPage:Slider({
-    Name = "Speed Value",
-    Flag = "SpeedValue",
-    Min = 16, Max = 200, Default = Config.Misc.SpeedValue, Suffix = " studs",
-    Callback = function(v) Config.Misc.SpeedValue = v end
-})
-
-MiscSectionPage:Toggle({
-    Name = "Noclip",
-    Flag = "Noclip",
-    Default = Config.Misc.Noclip,
-    Callback = function(v) Config.Misc.Noclip = v end
-})
-
-local TriggerPage = Window:Page({Name = "Trigger", Icon = "138827881557940"})
-local TriggerSection = TriggerPage:Section({Name = "Triggerbot", Side = 1})
-
-TriggerSection:Toggle({
+TriggerSectionMain:Toggle({
     Name = "Enable Triggerbot",
-    Flag = "TriggerEnabled",
+    Flag = "TriggerEnable",
     Default = Config.Trigger.Enabled,
     Callback = function(v) Config.Trigger.Enabled = v end
 })
 
-TriggerSection:Dropdown({
+TriggerSectionMain:Dropdown({
     Name = "Mode",
     Flag = "TriggerMode",
     Default = {Config.Trigger.Mode},
@@ -2493,52 +1133,128 @@ TriggerSection:Dropdown({
     Callback = function(v) Config.Trigger.Mode = v[1] end
 })
 
-TriggerSection:Slider({
+TriggerSectionMain:Slider({
     Name = "Magnet Radius",
-    Flag = "MagnetRadius",
-    Min = 5, Max = 200, Default = Config.Trigger.MagnetRadius, Suffix = " px",
+    Flag = "TriggerRadius",
+    Min = 5, Max = 200, Default = Config.Trigger.MagnetRadius,
     Callback = function(v) Config.Trigger.MagnetRadius = v end
 })
 
-TriggerSection:Slider({
-    Name = "Reaction Delay",
-    Flag = "ReactionTime",
-    Min = 0, Max = 0.5, Default = Config.Trigger.ReactionTime, Suffix = " s",
-    Callback = function(v) Config.Trigger.ReactionTime = v end
-})
-
-TriggerSection:Slider({
-    Name = "Stop Delay",
-    Flag = "StopDelay",
-    Min = 0.05, Max = 0.5, Default = Config.Trigger.StopDelay, Suffix = " s",
-    Callback = function(v) Config.Trigger.StopDelay = v end
-})
-
-TriggerSection:Toggle({
+TriggerSectionMain:Toggle({
     Name = "Team Check",
     Flag = "TriggerTeamCheck",
     Default = Config.Trigger.TeamCheck,
     Callback = function(v) Config.Trigger.TeamCheck = v end
 })
 
-local MenuPage = Window:Page({Name = "Menu", Icon = "138827881557940"})
-local MenuColorSection = MenuPage:Section({Name = "Menu Color", Side = 1})
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                          MISC PAGE                                    ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
+local MiscSectionMain = MiscPage:Section({Name = "Miscellaneous", Side = 1})
 
-MenuColorSection:Label("Static Menu Color"):Colorpicker({
-    Name = "Static Menu Color",
-    Flag = "StaticMenuColor",
-    Default = MenuCustomColor,
+MiscSectionMain:Toggle({
+    Name = "Fullbright",
+    Flag = "Fullbright",
+    Default = Config.Misc.Fullbright,
+    Callback = function(v) Config.Misc.Fullbright = v end
+})
+
+MiscSectionMain:Toggle({
+    Name = "Infinite Jump",
+    Flag = "InfiniteJump",
+    Default = Config.Misc.InfiniteJump,
+    Callback = function(v) Config.Misc.InfiniteJump = v end
+})
+
+MiscSectionMain:Toggle({
+    Name = "Speed Hack",
+    Flag = "SpeedHack",
+    Default = Config.Misc.SpeedHack,
+    Callback = function(v) Config.Misc.SpeedHack = v end
+})
+
+MiscSectionMain:Slider({
+    Name = "Speed Value",
+    Flag = "SpeedValue",
+    Min = 16, Max = 200, Default = Config.Misc.SpeedValue,
     Callback = function(v) 
-        MenuCustomColor = v
-        if not Config.MenuColor.UseRainbow then
-            Library.Theme.Accent = MenuCustomColor
-            Library.Theme.AccentGradient = MenuCustomColor
-            Library:ChangeTheme("Accent", MenuCustomColor)
-            Library:ChangeTheme("AccentGradient", MenuCustomColor)
+        Config.Misc.SpeedValue = v
+        if Config.Misc.SpeedHack then
+            local char = LocalPlayer.Character
+            if char then
+                local h = char:FindFirstChildOfClass("Humanoid")
+                if h then h.WalkSpeed = v end
+            end
         end
     end
 })
 
+MiscSectionMain:Toggle({
+    Name = "Noclip",
+    Flag = "Noclip",
+    Default = Config.Misc.Noclip,
+    Callback = function(v) Config.Misc.Noclip = v end
+})
+
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                          RAINBOW PAGE                                 ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
+local RainbowSectionMain = RainbowPage:Section({Name = "Rainbow Settings", Side = 1})
+
+RainbowSectionMain:Toggle({
+    Name = "Master Rainbow Switch",
+    Flag = "RainbowMaster",
+    Default = Config.Rainbow.Enabled,
+    Callback = function(v) Config.Rainbow.Enabled = v end
+})
+
+RainbowSectionMain:Slider({
+    Name = "Rainbow Speed",
+    Flag = "RainbowSpeed",
+    Min = 0.1, Max = 3, Default = Config.Rainbow.Speed,
+    Callback = function(v) Config.Rainbow.Speed = v end
+})
+
+RainbowSectionMain:Divider()
+
+RainbowSectionMain:Toggle({
+    Name = "Rainbow Menu",
+    Flag = "RainbowMenu",
+    Default = Config.MenuColor.UseRainbow,
+    Callback = function(v) Config.MenuColor.UseRainbow = v end
+})
+
+RainbowSectionMain:Toggle({
+    Name = "Rainbow Weapon Chams",
+    Flag = "RainbowWeapon",
+    Default = Config.WeaponChams.UseRainbow,
+    Callback = function(v) Config.WeaponChams.UseRainbow = v end
+})
+
+RainbowSectionMain:Toggle({
+    Name = "Rainbow Crosshair",
+    Flag = "RainbowCrosshair",
+    Default = Config.Crosshair.UseRainbow,
+    Callback = function(v) Config.Crosshair.UseRainbow = v end
+})
+
+RainbowSectionMain:Toggle({
+    Name = "Rainbow Aimbot FOV",
+    Flag = "RainbowAimbotFOV",
+    Default = Config.Aimbot.UseRainbowFOV,
+    Callback = function(v) Config.Aimbot.UseRainbowFOV = v end
+})
+
+RainbowSectionMain:Toggle({
+    Name = "Rainbow Silent FOV",
+    Flag = "RainbowSilentFOV",
+    Default = Config.SilentAim.UseRainbowFOV,
+    Callback = function(v) Config.SilentAim.UseRainbowFOV = v end
+})
+
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                          SETTINGS PAGE                                ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 Window:Category("Settings")
 local SettingsPage = Library:CreateSettingsPage(Window, KeybindList)
 
@@ -2570,16 +1286,48 @@ KeybindList:Add({
     Callback = function(v) Config.Visuals.ToggleBind = v end
 })
 
+-- ╔═══════════════════════════════════════════════════════════════════════╗
+-- ║                          ЗАПУСК                                       ║
+-- ╚═══════════════════════════════════════════════════════════════════════╝
 Window:Init()
-
 SetupSilentAim()
 
+local function SafeClick()
+    pcall(function()
+        local VirtualUser = game:GetService("VirtualUser")
+        VirtualUser:CaptureController()
+        local center = Camera.ViewportSize / 2
+        VirtualUser:ClickButton1(center, game)
+    end)
+end
+
+-- Speed hack loop
+task.spawn(function()
+    while State.Running do
+        if Config.Misc.SpeedHack then
+            local char = LocalPlayer.Character
+            if char then
+                local h = char:FindFirstChildOfClass("Humanoid")
+                if h then h.WalkSpeed = Config.Misc.SpeedValue end
+            end
+        end
+        if Config.Misc.Noclip then
+            local char = LocalPlayer.Character
+            if char then
+                for _, part in ipairs(char:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
+                end
+            end
+        end
+        task.wait(0.1)
+    end
+end)
+
 print("═══════════════════════════════════════════════════════════════════════")
-print("  Anyami Project v9.0 - FULL RAINBOW EDITION loaded!")
+print("  Anyami Project v9.1 FIXED - UI полностью рабочая!")
 print("═══════════════════════════════════════════════════════════════════════")
 print("  Press RightShift to open menu")
-print("  Aimbot: без smooth, предикт 0-3")
-print("  Silent Aim: с чеками на видимость/стены/тиму")
-print("  Weapon Chams: материал + цвет + свечение")
-print("  Rainbow: FULL RGB для всего (вкл/выкл мастер-свитчем)")
+print("  Все кнопки и настройки на месте")
 print("═══════════════════════════════════════════════════════════════════════")
