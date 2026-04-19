@@ -1,0 +1,421 @@
+local fenv = getfenv()
+local HttpGetContent_3 = game:HttpGet('https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/Library.lua')
+local Linoria = loadstring(HttpGetContent_3)()
+local HttpGetContent_5 = game:HttpGet('https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/addons/ThemeManager.lua')
+local Linoria = loadstring(HttpGetContent_5)()
+local HttpGetContent_7 = game:HttpGet('https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/addons/SaveManager.lua')
+local Linoria = loadstring(HttpGetContent_7)()
+Linoria["BackgroundColor"] = Color3.fromRGB(0, 0, 0)
+Linoria["MainColor"] = Color3.fromRGB(0, 0, 0)
+Linoria["AccentColor"] = Color3.fromRGB(255, 255, 255)
+Linoria["OutlineColor"] = Color3.fromRGB(27, 25, 25)
+Linoria["FontColor"] = Color3.fromRGB(255, 255, 255)
+Linoria["AccentColorDark"] = Color3.fromRGB(200, 200, 200)
+local v15 = Linoria.UpdateColorsUsingRegistry()
+local v16 = Linoria:CreateWindow({
+    AutoShow = true,
+    Title = 'Vanish.2312 - rost alpha',
+    MenuFadeTime = 0.2,
+    TabPadding = 8,
+    Center = true
+})
+local v17 = v16:AddTab('Combat')
+local v18 = v16:AddTab('Visuals')
+local v19 = v16:AddTab('World')
+local v20 = v16:AddTab('Miscs')
+local v21 = v16:AddTab('Other')
+local v22 = v17:AddLeftGroupbox('Hitbox Expander')
+local v23 = v22:AddToggle('HitboxEnabled', {
+    Default = false,
+    Text = 'General'
+})
+local v24 = v22:AddToggle('ShowHitbox', {
+    Default = false,
+    Text = 'Show hitbox'
+})
+local v25 = v24.AddColorPicker('HitboxColor', {
+    Transparency = 0.3,
+    Title = 'Hitbox Color',
+    Default = Color3.fromRGB(0, 100, 255)
+})
+local v26 = v22.AddSlider('HitboxX', {
+    Min = 0,
+    Default = 5,
+    Max = 15,
+    Text = 'X Size',
+    Rounding = 1
+})
+local v27 = v22.AddSlider('HitboxY', {
+    Min = 0,
+    Default = 5,
+    Max = 15,
+    Text = 'Y Size',
+    Rounding = 1
+})
+local v28 = v22.AddSlider('HitboxZ', {
+    Min = 0,
+    Default = 5,
+    Max = 15,
+    Text = 'Z Size',
+    Rounding = 1
+})
+local v29 = v17:AddLeftGroupbox('Silent Aimbot')
+local v30 = v29:AddToggle('SilentAimbot', {
+    Default = false,
+    Text = 'General'
+})
+local v31 = v30.AddKeyPicker('SilentAimbotKey', {
+    Default = 'None',
+    NoUI = false,
+    Mode = 'Toggle',
+    Text = 'Silent Aim',
+    SyncToggleState = true
+})
+local v32 = v29:AddToggle('ShowFOV', {
+    Default = false,
+    Text = 'FOV'
+})
+local v33 = v32.AddColorPicker('FOVColor', {
+    Default = Color3.fromRGB(255, 255, 255),
+    Title = 'FOV Color'
+})
+local v34 = v29:AddToggle('TargetLine', {
+    Default = false,
+    Text = 'Target line'
+})
+local v35 = v34.AddColorPicker('TargetLineColor', {
+    Default = Color3.fromRGB(255, 255, 255),
+    Title = 'Line Color'
+})
+local v36 = v29.AddSlider('FovRadius', {
+    Min = 0,
+    Default = 200,
+    Suffix = 'px',
+    Max = 500,
+    Text = 'Fov',
+    Rounding = 0
+})
+local v37 = v29:AddDropdown('AimbotPart', {
+    Multi = false,
+    Text = 'Part',
+    Values = {
+        'Head',
+        'HumanoidRootPart',
+        'Closest'
+    },
+    Default = 1
+})
+local v38 = v17:AddRightGroupbox('Guns Mode')
+local v39 = v38:AddToggle('NoRecoil', {
+    Default = false,
+    Text = 'No Recoil'
+})
+local v40 = v38:AddToggle('NoSpread', {
+    Default = false,
+    Text = 'No Spread'
+})
+local v41 = v38:AddToggle('NoSway', {
+    Default = false,
+    Text = 'No Sway'
+})
+local v42 = v38:AddToggle('InstantEoka', {
+    Default = false,
+    Text = 'Instant Eoka'
+})
+local v43 = v38:AddToggle('CanShoot', {
+    Default = false,
+    Text = 'Can shoot'
+})
+local v44 = v17:AddRightGroupbox('Target Inv Viewer')
+local v45 = v44:AddToggle('TargetInventory', {
+    Default = false,
+    Text = 'General'
+})
+local v46 = v18:AddLeftTabbox()
+local v47 = v46:AddTab('ESP')
+local v48 = v47:AddToggle('ESPEnabled', {
+    Default = false,
+    Text = 'General'
+})
+local v49 = v47:AddToggle('ESPBox', {
+    Default = false,
+    Text = 'Box'
+})
+local v50 = v49.AddColorPicker('ESPBoxColor', {
+    Default = Color3.fromRGB(255, 255, 255),
+    Title = 'Box Color'
+})
+local v51 = v47:AddToggle('ESPNickname', {
+    Default = false,
+    Text = 'Nickname'
+})
+local v52 = v51.AddColorPicker('ESPNicknameColor', {
+    Default = Color3.fromRGB(255, 255, 255),
+    Title = 'Nickname Color'
+})
+local v53 = v47:AddToggle('ESPDistanceText', {
+    Default = false,
+    Text = 'Distance'
+})
+local v54 = v53.AddColorPicker('ESPDistanceColor', {
+    Default = Color3.fromRGB(255, 255, 255),
+    Title = 'Distance Color'
+})
+local v55 = v47:AddToggle('ESPWeapon', {
+    Default = false,
+    Text = 'Weapon'
+})
+local v56 = v55.AddColorPicker('ESPWeaponColor', {
+    Default = Color3.fromRGB(255, 255, 255),
+    Title = 'Weapon Color'
+})
+local v57 = v47:AddToggle('ESPHealthBar', {
+    Default = false,
+    Text = 'Healthbar'
+})
+local v58 = v57.AddColorPicker('ESPHealthColor', {
+    Default = Color3.fromRGB(255, 255, 255),
+    Title = 'Health Color'
+})
+local v59 = v47.AddSlider('ESPDistance', {
+    Min = 0,
+    Default = 500,
+    Suffix = 'm',
+    Max = 3000,
+    Text = 'Max Distance',
+    Rounding = 0
+})
+local v60 = v46:AddTab('Chams')
+local v61 = v60:AddToggle('WeaponChams', {
+    Default = false,
+    Text = 'Weapon chams'
+})
+local v62 = v61.AddColorPicker('WeaponChamsColor', {
+    Default = Color3.fromRGB(255, 255, 255),
+    Title = 'Weapon Chams Color'
+})
+local v63 = v60:AddDropdown('WeaponChamsMode', {
+    Multi = false,
+    Text = 'Weapon chams mode',
+    Values = {
+        'Neon',
+        'ForceField',
+        'Glass'
+    },
+    Default = 1
+})
+local v64 = v18:AddRightGroupbox('Camera')
+local v65 = v64:AddToggle('FovEnabled', {
+    Default = false,
+    Text = 'Fov'
+})
+local v66 = v64.AddSlider('FovSize', {
+    Min = 0,
+    Default = 90,
+    Suffix = 'Â°',
+    Max = 120,
+    Text = 'Fov size',
+    Rounding = 0
+})
+local v67 = v64.AddDivider()
+local v68 = v64:AddToggle('AspectRatioEnabled', {
+    Default = false,
+    Text = 'Aspect Ratio'
+})
+local v69 = v64.AddSlider('AspectRatioValue', {
+    Min = 0,
+    Default = 0.6,
+    Max = 1.15,
+    Text = 'Ratio',
+    Rounding = 2
+})
+local v70 = v18:AddRightGroupbox('Bullet Tracer')
+local v71 = v70:AddToggle('TracerEnabled', {
+    Default = false,
+    Text = 'General'
+})
+local v72 = v71.AddColorPicker('TracerColor', {
+    Default = Color3.fromRGB(255, 255, 255),
+    Title = 'Tracer Color'
+})
+local v73 = v70.AddSlider('TracerLifetime', {
+    Min = 1,
+    Default = 5,
+    Suffix = 's',
+    Max = 20,
+    Text = 'Lifetime',
+    Rounding = 0
+})
+local v74 = v19:AddLeftGroupbox('Lighting')
+local v75 = v74:AddToggle('CustomSkybox', {
+    Default = false,
+    Text = 'Custom Skybox'
+})
+local v76 = v74:AddDropdown('SkyboxSelect', {
+    Multi = false,
+    Text = 'Select Skybox',
+    Values = {
+        'default',
+        'night sky',
+        'setting sun',
+        'fade blue',
+        'neptune',
+        'redshift',
+        'elegant morning',
+        'dreamy clouds',
+        'blue sky',
+        'vaporwave',
+        'blaze',
+        'among us',
+        'dark night',
+        'bright pink',
+        'purple sky',
+        'pinky sky'
+    },
+    Default = 1
+})
+local v77 = v74:AddToggle('AmbientEnabled', {
+    Default = false,
+    Text = 'Ambient'
+})
+local v78 = v77.AddColorPicker('AmbientColor', {
+    Default = Color3.fromRGB(255, 255, 255),
+    Title = 'Ambient Color'
+})
+local v79 = v74:AddToggle('AlwaysDay', {
+    Default = false,
+    Text = 'Always Day'
+})
+local v80 = v74:AddToggle('NoClouds', {
+    Default = false,
+    Text = 'No Clouds'
+})
+local v81 = v74:AddToggle('NoSun', {
+    Default = false,
+    Text = 'No Sun'
+})
+local v82 = v74:AddToggle('NoMoon', {
+    Default = false,
+    Text = 'No Moon'
+})
+local v83 = v74:AddToggle('NoFog', {
+    Default = false,
+    Text = 'No Fog'
+})
+local v84 = v74:AddToggle('NoShadow', {
+    Default = false,
+    Text = 'No Shadow'
+})
+local v85 = v19:AddRightGroupbox('Other')
+local v86 = v85:AddToggle('NoGrass', {
+    Default = false,
+    Text = 'No Grass'
+})
+local v87 = v20:AddLeftGroupbox('Movement')
+local v88 = v87:AddToggle('SpeedHack', {
+    Default = false,
+    Text = 'Speedhack'
+})
+local v89 = v88.AddKeyPicker('SpeedHackKey', {
+    Default = 'None',
+    NoUI = false,
+    Mode = 'Toggle',
+    Text = 'Speed',
+    SyncToggleState = true
+})
+local v90 = v87:AddToggle('InfJump', {
+    Default = false,
+    Text = 'InfJump'
+})
+local v91 = v90.AddKeyPicker('InfJumpKey', {
+    Default = 'None',
+    NoUI = false,
+    Mode = 'Toggle',
+    Text = 'InfJump',
+    SyncToggleState = true
+})
+local v92 = v87:AddToggle('FlyHack', {
+    Default = false,
+    Text = 'FlyHack'
+})
+local v93 = v92.AddKeyPicker('FlyHackKey', {
+    Default = 'None',
+    NoUI = false,
+    Mode = 'Toggle',
+    Text = 'Fly',
+    SyncToggleState = true
+})
+local v94 = v20:AddLeftGroupbox('Xray')
+local v95 = v94:AddToggle('XrayEnabled', {
+    Default = false,
+    Text = 'General'
+})
+local v96 = v95.AddKeyPicker('XrayKey', {
+    Default = 'None',
+    NoUI = false,
+    Mode = 'Toggle',
+    Text = 'Xray',
+    SyncToggleState = true
+})
+local v97 = v20:AddRightGroupbox('Logs')
+local v98 = v97:AddToggle('HitLogsEnabled', {
+    Default = false,
+    Text = 'Hit logs'
+})
+local v99 = v97:AddToggle('JoinLogsEnabled', {
+    Default = false,
+    Text = 'Join logs'
+})
+local v100 = v97:AddToggle('LeaveLogsEnabled', {
+    Default = false,
+    Text = 'Leave logs'
+})
+local v101 = v20:AddRightGroupbox('Mod List')
+local v102 = v101:AddToggle('ModListEnabled', {
+    Default = false,
+    Text = 'General'
+})
+local v103 = v20:AddRightGroupbox('Hit Sounds')
+for key_104, val_104 in pairs({
+    TF2 = 'rbxassetid://8255306220',
+    Bubble = 'rbxassetid://198598793',
+    Ding = 'rbxassetid://2868331684',
+    Unloosed = 'rbxassetid://8726881116',
+    Dink = 'rbxassetid://988593556',
+    ["Pidor-Us"] = 'rbxassetid://7227567562',
+    Minecraft = 'rbxassetid://6361963422',
+    Rust = 'rbxassetid://1255040462',
+    Skeet = 'rbxassetid://4817809188'
+}) do
+end
+local v106 = v103:AddToggle('HitSoundEnabled', {
+    Default = false,
+    Text = 'General'
+})
+local v107 = v103:AddDropdown('HitSoundChoice', {
+    Multi = false,
+    Text = 'Hit Sound',
+    Values = {
+        'TF2',
+        'Bubble',
+        'Ding',
+        'Unloosed',
+        'Dink',
+        'Pidor-Us',
+        'Minecraft',
+        'Rust',
+        'Skeet'
+    },
+    Default = 1
+})
+local v108 = v21:AddLeftGroupbox('Menu Settings')
+local v109 = v108:AddButton('Unload', function(arg1, arg2)
+    local v1 = Linoria.Unload()
+end)
+local v110 = v108.AddLabel('Menu Keybind')
+local v111 = v110.AddKeyPicker('MenuKeybind', {
+    NoUI = true,
+    Default = 'End',
+    Text = 'Menu Toggle Key'
+})
+error("[string \"input.lua\"]:2: attempt to index nil with 'MenuKeybind'")
